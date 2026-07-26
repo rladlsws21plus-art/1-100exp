@@ -2,12 +2,16 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 1. 메타 태그: 확대/축소 완전 금지 (maximum-scale=1.0, user-scalable=no) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>100레벨 무기 강화하기</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
+            -webkit-user-select: none;
+            /* 2. CSS: 더블 탭 확대 방지 및 즉시 터치 반응 */
+            touch-action: manipulation;
         }
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -19,6 +23,8 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            /* 터치 시 파란색 하이라이트 잔상 제거 */
+            -webkit-tap-highlight-color: transparent;
         }
         .game-container {
             position: relative;
@@ -55,6 +61,7 @@
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         .btn-help:hover {
             background-color: #0284c7;
@@ -168,6 +175,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         .btn-upgrade {
             background: linear-gradient(135deg, #00b09b, #96c93d);
@@ -193,7 +201,7 @@
         .fail { color: #e74c3c; }
         .info { color: #3498db; }
 
-        /* 📜 시스템 안내 설명 팝업 (모달) */
+        /* 시스템 안내 모달 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -251,18 +259,15 @@
 <body>
 
 <div class="game-container">
-    <!-- 헤더 바 (제목 및 도움말 버튼) -->
     <div class="header-bar">
         <h1 class="game-title">⚔️ 무기 강화하기</h1>
         <button class="btn-help" onclick="openHelp()">❓ 시스템 안내</button>
     </div>
 
-    <!-- 보유 화폐 -->
     <div class="money-display">
         소지금: <span id="money">10,000</span> 원
     </div>
 
-    <!-- 무기 및 이펙트 시각화 -->
     <div class="weapon-stage">
         <div class="weapon-info">
             <div class="weapon-stage-tag" id="stage-text">1단계 (1~10 Lv)</div>
@@ -275,7 +280,6 @@
         </div>
     </div>
 
-    <!-- 스탯 및 스펙 -->
     <div class="stat-grid">
         <div class="stat-item">강화 확률: <span class="stat-value" id="rate">100%</span></div>
         <div class="stat-item">강화 비용: <span class="stat-value" id="cost">500 원</span></div>
@@ -283,17 +287,14 @@
         <div class="stat-item">전체 레벨: <span class="stat-value" id="total-lv">1 / 100</span></div>
     </div>
 
-    <!-- 조작 버튼 -->
     <div class="btn-group">
         <button class="btn-upgrade" id="btn-upgrade" onclick="upgrade()">강화하기</button>
         <button class="btn-sell" id="btn-sell" onclick="sell()">판매</button>
     </div>
 
-    <!-- 이벤트 로그 -->
     <div class="log-box" id="log-msg">게임을 시작합니다.</div>
 </div>
 
-<!-- 📜 시스템 설명 안내 모달 창 -->
 <div class="modal-overlay" id="help-modal">
     <div class="modal-content">
         <h3 class="modal-title">📖 게임 시스템 안내</h3>
@@ -323,7 +324,17 @@
 </div>
 
 <script>
-    // 10가지 기본 무기 메타 데이터
+    // 3. 자바스크립트: 모바일 더블 탭 확대 강제 차단 코드
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault(); // 300ms 이내 재터치 시 더블 탭 줌 동작 금지
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // 무기 데이터
     const weaponData = [
         { stage: 1, name: "녹슨 단검", icon: "🗡️" },
         { stage: 2, name: "강철 장검", icon: "⚔️" },
@@ -337,11 +348,9 @@
         { stage: 10, name: "신화의 엑스칼리버", icon: "👑" }
     ];
 
-    // 게임 변수
     let money = 10000;
-    let totalLevel = 1; // 1 ~ 100 레벨
+    let totalLevel = 1;
 
-    // DOM 요소
     const elMoney = document.getElementById('money');
     const elStageText = document.getElementById('stage-text');
     const elWeaponName = document.getElementById('weapon-name');
@@ -355,7 +364,6 @@
     const btnUpgrade = document.getElementById('btn-upgrade');
     const helpModal = document.getElementById('help-modal');
 
-    // 수치 계산 로직
     function getCalcValues(level) {
         const stage = Math.min(10, Math.floor((level - 1) / 10) + 1);
         const subLevel = ((level - 1) % 10) + 1;
@@ -368,7 +376,6 @@
         return { stage, subLevel, effectLv, cost, sellPrice, rate };
     }
 
-    // UI 업데이트
     function updateUI() {
         const { stage, subLevel, effectLv, cost, sellPrice, rate } = getCalcValues(totalLevel);
         const currentWeapon = weaponData[stage - 1];
@@ -397,7 +404,6 @@
         }
     }
 
-    // 강화 함수
     function upgrade() {
         const { cost, rate } = getCalcValues(totalLevel);
 
@@ -430,7 +436,6 @@
         checkGameOver();
     }
 
-    // 판매 함수
     function sell() {
         const { sellPrice } = getCalcValues(totalLevel);
         
@@ -441,7 +446,6 @@
         updateUI();
     }
 
-    // 파산 여부 체크
     function checkGameOver() {
         const minCost = getCalcValues(1).cost;
         if (money < minCost && totalLevel === 1) {
@@ -456,7 +460,6 @@
         elLogMsg.innerText = msg;
     }
 
-    // 도움말 모달 열기/닫기
     function openHelp() {
         helpModal.style.display = 'flex';
     }
@@ -465,10 +468,8 @@
         helpModal.style.display = 'none';
     }
 
-    // 초기화
     updateUI();
 </script>
 
 </body>
 </html>
-
