@@ -2,24 +2,22 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <!-- 메타 태그: 모바일 확대/축소 차단 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <title>100레벨 무기 강화하기</title>
+    <title>100레벨 무기 강화하기 - 상점&인벤토리</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
-            /* touch-action: manipulation -> 더블탭 확대 동작을 끄고 연타 즉시 반응 */
             touch-action: manipulation;
         }
         body {
             font-family: 'Malgun Gothic', sans-serif;
-            background-color: #121212;
+            background-color: #0f172a;
             color: #ffffff;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -30,20 +28,20 @@
             position: relative;
             width: 100%;
             max-width: 420px;
-            background-color: #1e1e1e;
+            background-color: #1e293b;
             border-radius: 16px;
-            padding: 20px;
+            padding: 18px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             text-align: center;
-            border: 1px solid #333;
+            border: 1px solid #334155;
         }
         
-        /* 상단 헤더 & 도움말 버튼 */
+        /* 상단 헤더 */
         .header-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .game-title {
             font-size: 18px;
@@ -51,73 +49,74 @@
             color: #fff;
             margin: 0;
         }
-        .btn-help {
+        .top-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-top {
             background-color: #334155;
             color: #38bdf8;
             border: 1px solid #0284c7;
-            padding: 6px 12px;
-            font-size: 13px;
+            padding: 5px 10px;
+            font-size: 12px;
             font-weight: bold;
             border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s;
         }
-        .btn-help:hover {
+        .btn-top:hover {
             background-color: #0284c7;
             color: #fff;
         }
 
         /* 재화 표시 */
         .money-display {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
-            color: #ffd700;
-            background: #2a2a2a;
-            padding: 10px;
+            color: #facc15;
+            background: #0f172a;
+            padding: 8px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #444;
+            margin-bottom: 15px;
+            border: 1px solid #334155;
         }
 
         /* 무기 Display 영역 */
         .weapon-stage {
             position: relative;
-            height: 220px;
-            background: radial-gradient(circle, #2a2c38 0%, #15161e 100%);
+            height: 180px;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             overflow: hidden;
-            border: 2px solid #3d3f52;
+            border: 2px solid #334155;
         }
 
         .weapon-info {
             position: absolute;
-            top: 10px;
+            top: 8px;
             left: 10px;
             text-align: left;
-            font-size: 14px;
         }
         .weapon-stage-tag {
-            color: #888;
-            font-size: 12px;
+            color: #94a3b8;
+            font-size: 11px;
         }
         .weapon-name {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            color: #4facfe;
+            color: #38bdf8;
             margin-top: 2px;
         }
 
-        /* 무기 & 이펙트 레이어 */
         .weapon-box {
             position: relative;
-            font-size: 80px;
+            font-size: 70px;
             line-height: 1;
-            margin-top: 20px;
+            margin-top: 15px;
             transition: transform 0.1s;
         }
         .effect-layer {
@@ -125,13 +124,12 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             pointer-events: none;
         }
 
-        /* 이펙트 레벨별 CSS */
         .fx-0 { display: none; }
         .fx-1 { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
         .fx-2 { box-shadow: 0 0 25px rgba(79, 172, 254, 0.6); }
@@ -150,25 +148,60 @@
         .stat-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            background: #252525;
-            padding: 12px;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            background: #0f172a;
+            padding: 10px;
             border-radius: 8px;
         }
         .stat-item { text-align: left; }
         .stat-value { font-weight: bold; color: #fff; }
 
+        /* 🎒 퀵슬롯 인벤토리 */
+        .quick-slot-title {
+            font-size: 13px;
+            color: #94a3b8;
+            text-align: left;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        .quick-slot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .slot-item {
+            background-color: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .slot-item.active {
+            border-color: #38bdf8;
+            background-color: #1e293b;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+        .slot-icon { font-size: 24px; }
+        .slot-details { text-align: left; flex: 1; margin-left: 8px; }
+        .slot-name { font-size: 11px; font-weight: bold; color: #e2e8f0; }
+        .slot-count { font-size: 12px; color: #facc15; font-weight: bold; }
+
         /* 조작 버튼 */
         .btn-group {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
         button {
-            padding: 15px;
-            font-size: 16px;
+            padding: 14px;
+            font-size: 15px;
             font-weight: bold;
             border: none;
             border-radius: 8px;
@@ -176,30 +209,24 @@
             transition: all 0.2s;
         }
         .btn-upgrade {
-            background: linear-gradient(135deg, #00b09b, #96c93d);
+            background: linear-gradient(135deg, #22c55e, #15803d);
             color: #fff;
         }
-        .btn-upgrade:hover { opacity: 0.9; }
-        .btn-upgrade:disabled { background: #555; color: #888; cursor: not-allowed; }
-        
-        .btn-sell {
-            background: #e74c3c;
-            color: #fff;
-        }
-        .btn-sell:hover { background: #c0392b; }
+        .btn-upgrade:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+        .btn-sell { background: #ef4444; color: #fff; }
 
         /* 상태 메시지 */
         .log-box {
-            margin-top: 15px;
-            height: 24px;
-            font-size: 14px;
+            margin-top: 12px;
+            height: 20px;
+            font-size: 13px;
             font-weight: bold;
         }
-        .success { color: #2ecc71; }
-        .fail { color: #e74c3c; }
-        .info { color: #3498db; }
+        .success { color: #4ade80; }
+        .fail { color: #f87171; }
+        .info { color: #38bdf8; }
 
-        /* 시스템 안내 모달 */
+        /* 🛒 모달 팝업 공통 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -221,30 +248,41 @@
             color: #e2e8f0;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
         .modal-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             color: #facc15;
-            margin-top: 0;
-            margin-bottom: 15px;
+            margin: 0 0 12px 0;
             border-bottom: 1px solid #334155;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
-        .modal-body ul {
-            padding-left: 20px;
-            margin: 0 0 15px 0;
-            font-size: 13px;
-            line-height: 1.6;
+
+        /* 상점 리스트 */
+        .shop-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
-        .modal-body li {
-            margin-bottom: 8px;
+        .shop-info { display: flex; align-items: center; gap: 10px; }
+        .shop-price { font-size: 12px; color: #facc15; margin-top: 2px; }
+        .btn-buy {
+            background-color: #0284c7;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
         }
+
         .modal-close-btn {
             width: 100%;
             padding: 10px;
-            background-color: #0284c7;
+            background-color: #475569;
             color: white;
             font-weight: bold;
             border: none;
@@ -259,7 +297,10 @@
 <div class="game-container">
     <div class="header-bar">
         <h1 class="game-title">⚔️ 무기 강화하기</h1>
-        <button class="btn-help" onclick="openHelp()">❓ 시스템 안내</button>
+        <div class="top-btns">
+            <button class="btn-top" onclick="openShop()">🛒 상점</button>
+            <button class="btn-top" onclick="openHelp()">❓ 안내</button>
+        </div>
     </div>
 
     <div class="money-display">
@@ -285,6 +326,25 @@
         <div class="stat-item">전체 레벨: <span class="stat-value" id="total-lv">1 / 100</span></div>
     </div>
 
+    <!-- 🎒 퀵슬롯 인벤토리 -->
+    <div class="quick-slot-title">🎒 강화 보조 인벤토리 (클릭하여 적용)</div>
+    <div class="quick-slot-grid">
+        <div class="slot-item" id="slot-rate" onclick="toggleRateScroll()">
+            <div class="slot-icon">🍀</div>
+            <div class="slot-details">
+                <div class="slot-name">확률 증가권 (+2%)</div>
+                <div class="slot-count">보유: <span id="cnt-rate">0</span>장</div>
+            </div>
+        </div>
+        <div class="slot-item" id="slot-protect" onclick="toggleProtectScroll()">
+            <div class="slot-icon">🛡️</div>
+            <div class="slot-details">
+                <div class="slot-name">파괴 방지권</div>
+                <div class="slot-count">보유: <span id="cnt-protect">0</span>장</div>
+            </div>
+        </div>
+    </div>
+
     <div class="btn-group">
         <button class="btn-upgrade" id="btn-upgrade" onclick="upgrade()">강화하기</button>
         <button class="btn-sell" id="btn-sell" onclick="sell()">판매</button>
@@ -293,43 +353,53 @@
     <div class="log-box" id="log-msg">게임을 시작합니다.</div>
 </div>
 
+<!-- 🛒 상점 모달 -->
+<div class="modal-overlay" id="shop-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">🛒 아이템 상점</h3>
+        
+        <div class="shop-item">
+            <div class="shop-info">
+                <span style="font-size:28px;">🍀</span>
+                <div>
+                    <div style="font-weight:bold; font-size:13px;">확률 증가권 (+2%)</div>
+                    <div class="shop-price">5,000 원</div>
+                </div>
+            </div>
+            <button class="btn-buy" onclick="buyItem('rate')">구매</button>
+        </div>
+
+        <div class="shop-item">
+            <div class="shop-info">
+                <span style="font-size:28px;">🛡️</span>
+                <div>
+                    <div style="font-weight:bold; font-size:13px;">파괴 방지권</div>
+                    <div class="shop-price">30,000 원</div>
+                </div>
+            </div>
+            <button class="btn-buy" onclick="buyItem('protect')">구매</button>
+        </div>
+
+        <button class="modal-close-btn" onclick="closeShop()">닫기</button>
+    </div>
+</div>
+
+<!-- ❓ 도움말 모달 -->
 <div class="modal-overlay" id="help-modal">
     <div class="modal-content">
         <h3 class="modal-title">📖 게임 시스템 안내</h3>
-        <div class="modal-body">
-            <ul>
-                <li><strong>단계 및 레벨 구조 (총 100레벨):</strong><br>
-                    - 10레벨마다 무기 단계가 변경됩니다. (총 10종의 무기)<br>
-                    - 1단계(1~10Lv), 2단계(11~20Lv) ... 10단계(91~100Lv)
-                </li>
-                <li><strong>이펙트 연출 시스템:</strong><br>
-                    - 각 단계의 1레벨은 기본 무기 형태입니다.<br>
-                    - 2레벨부터 레벨이 오를 때마다 9가지 이펙트가 추가되어 점차 화려해집니다.
-                </li>
-                <li><strong>강화 및 비용:</strong><br>
-                    - 레벨이 올라갈수록 강화 성공 확률은 낮아지고 비용은 비선형으로 증가합니다.
-                </li>
-                <li><strong>무기 판매:</strong><br>
-                    - 현재 무기를 판매하여 원화(원)를 획득할 수 있습니다. 판매 후에는 1단계 1레벨 무기로 초기화됩니다.
-                </li>
-                <li><strong>게임 오버 (파산):</strong><br>
-                    - 무기를 더 이상 강화할 수도 없고, 판매도 할 수 없는 상태(소지금 부족)가 되면 파산 처리됩니다.
-                </li>
-            </ul>
-        </div>
+        <ul style="padding-left: 18px; font-size: 12px; line-height: 1.6;">
+            <li><strong>2단계 이상 파괴 위험:</strong> 11레벨(2단계)부터 실패 시 10% 확률로 무기가 파괴되어 1단계 1레벨로 초기화됩니다.</li>
+            <li><strong>확률 증가권 (🍀):</strong> 1장당 확률이 +2% 증가합니다. (1회당 최대 5장 사용 가능)</li>
+            <li><strong>파괴 방지권 (🛡️):</strong> 무기 단계($N$단계)에 맞춰 $N$장이 필요하며, 실패 시 파괴를 완벽히 막아줍니다.</li>
+        </ul>
         <button class="modal-close-btn" onclick="closeHelp()">닫기</button>
     </div>
 </div>
 
 <script>
-    // 두 손가락 이상 확대(핀치 줌) 차단
-    document.addEventListener('touchstart', function(event) {
-        if (event.touches.length > 1) {
-            event.preventDefault();
-        }
-    }, { passive: false });
+    document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-    // 무기 데이터
     const weaponData = [
         { stage: 1, name: "녹슨 단검", icon: "🗡️" },
         { stage: 2, name: "강철 장검", icon: "⚔️" },
@@ -346,6 +416,12 @@
     let money = 10000;
     let totalLevel = 1;
 
+    // 아이템 보유량 및 적용 상태
+    let rateScrolls = 0;
+    let protectScrolls = 0;
+    let useRateScroll = false;
+    let useProtectScroll = false;
+
     const elMoney = document.getElementById('money');
     const elStageText = document.getElementById('stage-text');
     const elWeaponName = document.getElementById('weapon-name');
@@ -357,7 +433,6 @@
     const elTotalLv = document.getElementById('total-lv');
     const elLogMsg = document.getElementById('log-msg');
     const btnUpgrade = document.getElementById('btn-upgrade');
-    const helpModal = document.getElementById('help-modal');
 
     function getCalcValues(level) {
         const stage = Math.min(10, Math.floor((level - 1) / 10) + 1);
@@ -366,9 +441,18 @@
 
         const cost = Math.floor(100 * Math.pow(level, 1.8));
         const sellPrice = Math.floor(cost * 0.7 * level);
-        let rate = Math.max(5, Math.floor(100 - (level * 0.95)));
+        let baseRate = Math.max(5, Math.floor(100 - (level * 0.95)));
 
-        return { stage, subLevel, effectLv, cost, sellPrice, rate };
+        // 확률 증가권 적용 시 (최대 5장 = +10%)
+        let bonusRate = 0;
+        if (useRateScroll && rateScrolls > 0) {
+            const usedCount = Math.min(rateScrolls, 5);
+            bonusRate = usedCount * 2;
+        }
+
+        const finalRate = Math.min(100, baseRate + bonusRate);
+
+        return { stage, subLevel, effectLv, cost, sellPrice, rate: finalRate, baseRate };
     }
 
     function updateUI() {
@@ -387,43 +471,82 @@
         elSellPrice.innerText = `${sellPrice.toLocaleString()} 원`;
         elTotalLv.innerText = `${totalLevel} / 100`;
 
-        if (money < cost && totalLevel < 100) {
-            btnUpgrade.disabled = true;
-        } else {
-            btnUpgrade.disabled = false;
-        }
+        document.getElementById('cnt-rate').innerText = rateScrolls;
+        document.getElementById('cnt-protect').innerText = protectScrolls;
 
-        if (totalLevel >= 100) {
-            btnUpgrade.disabled = true;
-            elLogMsg.innerHTML = `<span class="success">🎉 만렙(100Lv) 달성! 최고 신화 무기 완성!</span>`;
-        }
+        // 퀵슬롯 활성 스타일
+        document.getElementById('slot-rate').classList.toggle('active', useRateScroll && rateScrolls > 0);
+        document.getElementById('slot-protect').classList.toggle('active', useProtectScroll && protectScrolls > 0);
+
+        btnUpgrade.disabled = (money < cost && totalLevel < 100);
     }
 
+    // 퀵슬롯 토글
+    function toggleRateScroll() {
+        if (rateScrolls <= 0) {
+            setLog("확률 증가권이 없습니다. 상점에서 구입하세요!", "fail");
+            return;
+        }
+        useRateScroll = !useRateScroll;
+        updateUI();
+    }
+
+    function toggleProtectScroll() {
+        if (protectScrolls <= 0) {
+            setLog("파괴 방지권이 없습니다. 상점에서 구입하세요!", "fail");
+            return;
+        }
+        useProtectScroll = !useProtectScroll;
+        updateUI();
+    }
+
+    // 강화 진행
     function upgrade() {
-        const { cost, rate } = getCalcValues(totalLevel);
+        const { stage, cost, rate } = getCalcValues(totalLevel);
 
         if (money < cost) {
-            setLog("소지원금이 부족합니다!", "fail");
-            checkGameOver();
+            setLog("소지금이 부족합니다!", "fail");
             return;
         }
 
-        money -= cost;
+        // 파괴 방지권 사용 검증
+        if (useProtectScroll) {
+            const requiredProtect = stage; // N단계 = N장 소모
+            if (protectScrolls < requiredProtect) {
+                alert(`⚠️ [수량 부족] ${stage}단계 무기 강화에는 파괴 방지권이 ${requiredProtect}장 필요하지만, 현재 ${protectScrolls}장 보유 중입니다.`);
+                return;
+            } else {
+                const confirmUse = confirm(`🛡️ ${stage}단계 강화 보호를 위해 파괴 방지권 ${requiredProtect}장을 사용하시겠습니까?`);
+                if (!confirmUse) return;
+                protectScrolls -= requiredProtect;
+            }
+        }
 
+        // 확률 증가권 차감 (최대 5장)
+        if (useRateScroll && rateScrolls > 0) {
+            const usedRateCount = Math.min(rateScrolls, 5);
+            rateScrolls -= usedRateCount;
+        }
+
+        money -= cost;
         const rand = Math.random() * 100;
+
         if (rand <= rate) {
+            // 성공
             totalLevel++;
-            setLog(`강화 성공! (+${totalLevel} 레벨)`, "success");
-            
+            setLog(`🎉 강화 성공! (+${totalLevel} 레벨)`, "success");
             const box = document.getElementById('weapon-box');
             box.style.transform = 'scale(1.2)';
             setTimeout(() => box.style.transform = 'scale(1)', 150);
         } else {
-            if (totalLevel > 1) {
-                totalLevel--;
-                setLog(`강화 실패... 레벨이 하락했습니다.`, "fail");
+            // 실패
+            if (stage >= 2 && Math.random() < 0.10 && !useProtectScroll) {
+                // 2단계 이상, 10% 확률 파괴 (방지권 미사용 시)
+                totalLevel = 1;
+                setLog(`💥 콰쾅! 무기가 파괴되어 1단계 1레벨로 초기화되었습니다.`, "fail");
             } else {
-                setLog(`강화 실패! (레벨 유지)`, "fail");
+                if (totalLevel > 1) totalLevel--;
+                setLog(`강화 실패... 레벨이 하락했습니다.`, "fail");
             }
         }
 
@@ -433,20 +556,30 @@
 
     function sell() {
         const { sellPrice } = getCalcValues(totalLevel);
-        
         money += sellPrice;
         setLog(`무기를 판매하여 ${sellPrice.toLocaleString()}원을 얻었습니다.`, "info");
-        
         totalLevel = 1;
+        updateUI();
+    }
+
+    function buyItem(type) {
+        if (type === 'rate') {
+            if (money < 5000) { alert("소지금이 부족합니다!"); return; }
+            money -= 5000;
+            rateScrolls++;
+        } else if (type === 'protect') {
+            if (money < 30000) { alert("소지금이 부족합니다!"); return; }
+            money -= 30000;
+            protectScrolls++;
+        }
         updateUI();
     }
 
     function checkGameOver() {
         const minCost = getCalcValues(1).cost;
-        if (money < minCost && totalLevel === 1) {
+        if (money < minCost && totalLevel === 1 && rateScrolls === 0 && protectScrolls === 0) {
             setLog("💸 파산했습니다! 더 이상 진행할 수 없습니다. (게임 오버)", "fail");
             btnUpgrade.disabled = true;
-            document.getElementById('btn-sell').disabled = true;
         }
     }
 
@@ -455,13 +588,10 @@
         elLogMsg.innerText = msg;
     }
 
-    function openHelp() {
-        helpModal.style.display = 'flex';
-    }
-
-    function closeHelp() {
-        helpModal.style.display = 'none';
-    }
+    function openShop() { document.getElementById('shop-modal').style.display = 'flex'; }
+    function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
+    function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
+    function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 
     updateUI();
 </script>
