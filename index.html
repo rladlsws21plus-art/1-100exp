@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <!-- 1. 메타 태그: 확대/축소 완전 금지 (maximum-scale=1.0, user-scalable=no) -->
+    <!-- 메타 태그: 모바일 확대/축소 차단 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>100레벨 무기 강화하기</title>
     <style>
@@ -10,7 +10,8 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
-            /* 2. CSS: 더블 탭 확대 방지 및 즉시 터치 반응 */
+            -webkit-touch-callout: none;
+            /* touch-action: manipulation -> 더블탭 확대 동작을 끄고 연타 즉시 반응 */
             touch-action: manipulation;
         }
         body {
@@ -23,7 +24,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* 터치 시 파란색 하이라이트 잔상 제거 */
             -webkit-tap-highlight-color: transparent;
         }
         .game-container {
@@ -61,7 +61,6 @@
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s;
-            touch-action: manipulation;
         }
         .btn-help:hover {
             background-color: #0284c7;
@@ -175,7 +174,6 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            touch-action: manipulation;
         }
         .btn-upgrade {
             background: linear-gradient(135deg, #00b09b, #96c93d);
@@ -324,15 +322,12 @@
 </div>
 
 <script>
-    // 3. 자바스크립트: 모바일 더블 탭 확대 강제 차단 코드
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function (event) {
-        const now = (new Date()).getTime();
-        if (now - lastTouchEnd <= 300) {
-            event.preventDefault(); // 300ms 이내 재터치 시 더블 탭 줌 동작 금지
+    // 두 손가락 이상 확대(핀치 줌) 차단
+    document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+            event.preventDefault();
         }
-        lastTouchEnd = now;
-    }, false);
+    }, { passive: false });
 
     // 무기 데이터
     const weaponData = [
@@ -408,7 +403,7 @@
         const { cost, rate } = getCalcValues(totalLevel);
 
         if (money < cost) {
-            setLog("소지금이 부족합니다!", "fail");
+            setLog("소지원금이 부족합니다!", "fail");
             checkGameOver();
             return;
         }
