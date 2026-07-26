@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100레벨 무기 강화하기</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 420px;
+            background-color: #1e1e1e;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        /* 재화 표시 */
+        .money-display {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffd700;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+
+        /* 무기 Display 영역 */
+        .weapon-stage {
+            position: relative;
+            height: 220px;
+            background: radial-gradient(circle, #2a2c38 0%, #15161e 100%);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 2px solid #3d3f52;
+        }
+
+        .weapon-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        .weapon-stage-tag {
+            color: #888;
+            font-size: 12px;
+        }
+        .weapon-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4facfe;
+            margin-top: 2px;
+        }
+
+        /* 무기 & 이펙트 레이어 */
+        .weapon-box {
+            position: relative;
+            font-size: 80px;
+            line-height: 1;
+            margin-top: 20px;
+            transition: transform 0.1s;
+        }
+        .effect-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* 이펙트 레벨별 CSS (이펙트 9종 대신 표현) */
+        .fx-0 { display: none; }
+        .fx-1 { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+        .fx-2 { box-shadow: 0 0 25px rgba(79, 172, 254, 0.6); }
+        .fx-3 { box-shadow: 0 0 35px rgba(0, 242, 254, 0.8); }
+        .fx-4 { box-shadow: 0 0 45px rgba(51, 217, 178, 0.9); }
+        .fx-5 { box-shadow: 0 0 55px rgba(255, 221, 89, 1); }
+        .fx-6 { box-shadow: 0 0 65px rgba(255, 159, 26, 1); animation: spin 4s linear infinite; }
+        .fx-7 { box-shadow: 0 0 75px rgba(255, 77, 77, 1); animation: spin 2s linear infinite; }
+        .fx-8 { box-shadow: 0 0 90px rgba(136, 84, 208, 1); animation: pulse 0.8s infinite alternate; }
+        .fx-9 { box-shadow: 0 0 110px rgba(255, 0, 128, 1), inset 0 0 20px #fff; animation: pulse 0.4s infinite alternate; }
+
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.1); } }
+
+        /* 정보 및 확률 표시 */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            background: #252525;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .stat-item { text-align: left; }
+        .stat-value { font-weight: bold; color: #fff; }
+
+        /* 버튼 그룹 */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+        }
+        button {
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-upgrade {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: #fff;
+        }
+        .btn-upgrade:hover { opacity: 0.9; }
+        .btn-upgrade:disabled { background: #555; color: #888; cursor: not-allowed; }
+        
+        .btn-sell {
+            background: #e74c3c;
+            color: #fff;
+        }
+        .btn-sell:hover { background: #c0392b; }
+
+        /* 상태 메시지 알림 */
+        .log-box {
+            margin-top: 15px;
+            height: 24px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .success { color: #2ecc71; }
+        .fail { color: #e74c3c; }
+        .info { color: #3498db; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <!-- 보유 화폐 -->
+    <div class="money-display">
+        소지금: <span id="money">10,000</span> 원
+    </div>
+
+    <!-- 무기 및 이펙트 시각화 -->
+    <div class="weapon-stage">
+        <div class="weapon-info">
+            <div class="weapon-stage-tag" id="stage-text">1단계 (1~10 Lv)</div>
+            <div class="weapon-name" id="weapon-name">녹슨 단검 (+1)</div>
+        </div>
+        
+        <div class="weapon-box" id="weapon-box">
+            <div class="effect-layer fx-0" id="effect-layer"></div>
+            <span id="weapon-icon">🗡️</span>
+        </div>
+    </div>
+
+    <!-- 스탯 및 스펙 -->
+    <div class="stat-grid">
+        <div class="stat-item">강화 확률: <span class="stat-value" id="rate">100%</span></div>
+        <div class="stat-item">강화 비용: <span class="stat-value" id="cost">500 원</span></div>
+        <div class="stat-item">판매 가격: <span class="stat-value" id="sell-price">300 원</span></div>
+        <div class="stat-item">전체 레벨: <span class="stat-value" id="total-lv">1 / 100</span></div>
+    </div>
+
+    <!-- 조작 버튼 -->
+    <div class="btn-group">
+        <button class="btn-upgrade" id="btn-upgrade" onclick="upgrade()">강화하기</button>
+        <button class="btn-sell" id="btn-sell" onclick="sell()">판매</button>
+    </div>
+
+    <!-- 이벤트 로그 -->
+    <div class="log-box" id="log-msg">게임을 시작합니다.</div>
+</div>
+
+<script>
+    // 10가지 기본 무기 메타 데이터
+    const weaponData = [
+        { stage: 1, name: "녹슨 단검", icon: "🗡️" },
+        { stage: 2, name: "강철 장검", icon: "⚔️" },
+        { stage: 3, name: "전사의 도끼", icon: "🪓" },
+        { stage: 4, name: "기사의 창", icon: "🗡️" },
+        { stage: 5, name: "마법 망치", icon: "🔨" },
+        { stage: 6, name: "암흑 대검", icon: "⚔️" },
+        { stage: 7, name: "성스러운 낫", icon: "🌾" },
+        { stage: 8, name: "용사 피어싱 창", icon: "🔱" },
+        { stage: 9, name: "파멸의 둔기", icon: "🦯" },
+        { stage: 10, name: "신화의 엑스칼리버", icon: "👑" }
+    ];
+
+    // 게임 변수
+    let money = 10000;
+    let totalLevel = 1; // 1 ~ 100 레벨
+
+    // DOM 요소
+    const elMoney = document.getElementById('money');
+    const elStageText = document.getElementById('stage-text');
+    const elWeaponName = document.getElementById('weapon-name');
+    const elWeaponIcon = document.getElementById('weapon-icon');
+    const elEffectLayer = document.getElementById('effect-layer');
+    const elRate = document.getElementById('rate');
+    const elCost = document.getElementById('cost');
+    const elSellPrice = document.getElementById('sell-price');
+    const elTotalLv = document.getElementById('total-lv');
+    const elLogMsg = document.getElementById('log-msg');
+    const btnUpgrade = document.getElementById('btn-upgrade');
+
+    // 수치 계산 로직
+    function getCalcValues(level) {
+        // 1. 단계(1~10) 및 이펙트 레벨(0~9) 계산
+        const stage = Math.min(10, Math.floor((level - 1) / 10) + 1);
+        const subLevel = ((level - 1) % 10) + 1; // 단계 내 레벨 (1~10)
+        const effectLv = subLevel - 1; // 1렙=이펙트0(없음), 2~10렙=이펙트1~9
+
+        // 2. 강화 비용공식 (레벨이 높을수록 비선형 증가)
+        const cost = Math.floor(100 * Math.pow(level, 1.8));
+
+        // 3. 판매 가격 (투입 가치 감안)
+        const sellPrice = Math.floor(cost * 0.7 * level);
+
+        // 4. 강화 성공 확률 (100%에서 시작해 100레벨 시 5%까지 하락)
+        let rate = Math.max(5, Math.floor(100 - (level * 0.95)));
+
+        return { stage, subLevel, effectLv, cost, sellPrice, rate };
+    }
+
+    // UI 업데이트
+    function updateUI() {
+        const { stage, subLevel, effectLv, cost, sellPrice, rate } = getCalcValues(totalLevel);
+        const currentWeapon = weaponData[stage - 1];
+
+        // 화폐 업데이트
+        elMoney.innerText = money.toLocaleString();
+
+        // 무기 정보 업데이트
+        elStageText.innerText = `${stage}단계 (${(stage-1)*10 + 1}~${stage*10} Lv)`;
+        elWeaponName.innerText = `${currentWeapon.name} (+${subLevel})`;
+        elWeaponIcon.innerText = currentWeapon.icon;
+
+        // 이펙트 클래스 교체 (0~9단계)
+        elEffectLayer.className = `effect-layer fx-${effectLv}`;
+
+        // 스탯 정보 업데이트
+        elRate.innerText = `${rate}%`;
+        elCost.innerText = `${cost.toLocaleString()} 원`;
+        elSellPrice.innerText = `${sellPrice.toLocaleString()} 원`;
+        elTotalLv.innerText = `${totalLevel} / 100`;
+
+        // 버튼 상태 제어 (돈 부족 시 비활성화)
+        if (money < cost && totalLevel < 100) {
+            btnUpgrade.disabled = true;
+        } else {
+            btnUpgrade.disabled = false;
+        }
+
+        // 최고 레벨 달성 시
+        if (totalLevel >= 100) {
+            btnUpgrade.disabled = true;
+            elLogMsg.innerHTML = `<span class="success">🎉 만렙(100Lv) 달성! 최고 신화 무기 완성!</span>`;
+        }
+    }
+
+    // 강화 함수
+    function upgrade() {
+        const { cost, rate } = getCalcValues(totalLevel);
+
+        // 돈 부족 체크
+        if (money < cost) {
+            setLog("소지금이 부족합니다!", "fail");
+            checkGameOver();
+            return;
+        }
+
+        // 비용 차감
+        money -= cost;
+
+        // 확률 계산
+        const rand = Math.random() * 100;
+        if (rand <= rate) {
+            // 성공
+            totalLevel++;
+            setLog(`강화 성공! (+${totalLevel} 레벨)`, "success");
+            
+            // 무기 흔들림 애니메이션 효과
+            const box = document.getElementById('weapon-box');
+            box.style.transform = 'scale(1.2)';
+            setTimeout(() => box.style.transform = 'scale(1)', 150);
+
+        } else {
+            // 실패 (프로토타입: 1레벨 하락, 최소 1레벨 보장)
+            if (totalLevel > 1) {
+                totalLevel--;
+                setLog(`강화 실패... 레벨이 하락했습니다.`, "fail");
+            } else {
+                setLog(`강화 실패! (레벨 유지)`, "fail");
+            }
+        }
+
+        updateUI();
+        checkGameOver();
+    }
+
+    // 판매 함수
+    function sell() {
+        const { sellPrice } = getCalcValues(totalLevel);
+        
+        money += sellPrice;
+        setLog(`무기를 판매하여 ${sellPrice.toLocaleString()}원을 얻었습니다.`, "info");
+        
+        // 무기 초기화 (1레벨로)
+        totalLevel = 1;
+        updateUI();
+    }
+
+    // 파산 여부 체크 (강화도, 판매도 못할 때)
+    function checkGameOver() {
+        const { cost } = getCalcValues(totalLevel);
+
+        // 소지금이 강화 비용보다 적은 경우 (판매는 언제든 1레벨 초기화 후 가능하므로, 
+        // 1레벨 상태에서 1레벨 강화비용보다 적으면 파산)
+        const minCost = getCalcValues(1).cost;
+        if (money < minCost && totalLevel === 1) {
+            setLog("💸 파산했습니다! 더 이상 진행할 수 없습니다. (게임 오버)", "fail");
+            btnUpgrade.disabled = true;
+            document.getElementById('btn-sell').disabled = true;
+        }
+    }
+
+    function setLog(msg, type) {
+        elLogMsg.className = `log-box ${type}`;
+        elLogMsg.innerText = msg;
+    }
+
+    // 게임 시작 시 초기화
+    updateUI();
+</script>
+
+</body>
+</html>
