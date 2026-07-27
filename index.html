@@ -222,6 +222,7 @@
         .btn-upgrade { background: linear-gradient(135deg, #22c55e, #15803d); color: #fff; }
         .btn-upgrade:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
         .btn-sell { background: #ef4444; color: #fff; }
+        .btn-sell:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
 
         .log-box { margin-top: 12px; height: 20px; font-size: 13px; font-weight: bold; }
         .success { color: #4ade80; }
@@ -258,6 +259,23 @@
             margin: 0 0 10px 0;
             padding-bottom: 6px;
         }
+
+        .shop-status-panel {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .shop-status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .shop-status-row:last-child { margin-bottom: 0; }
+        .shop-status-val { font-weight: bold; color: #38bdf8; }
 
         .shop-tab-bar {
             display: flex;
@@ -366,7 +384,7 @@
     <div class="stat-grid">
         <div class="stat-item">강화 확률: <span class="stat-value" id="rate">100%</span></div>
         <div class="stat-item">강화 비용: <span class="stat-value" id="cost">500 원</span></div>
-        <div class="stat-item">판매 가격: <span class="stat-value" id="sell-price">300 원</span></div>
+        <div class="stat-item">판매 가격: <span class="stat-value" id="sell-price">-</span></div>
         <div class="stat-item">현재 레벨: <span class="stat-value" id="total-lv">1 / 100</span></div>
     </div>
 
@@ -390,7 +408,7 @@
 
     <div class="btn-group">
         <button class="btn-upgrade" id="btn-upgrade" onclick="upgrade()">강화하기</button>
-        <button class="btn-sell" id="btn-sell" onclick="sell()">판매</button>
+        <button class="btn-sell" id="btn-sell" onclick="sell()">판매 불가</button>
     </div>
 
     <div class="log-box" id="log-msg">게임을 시작합니다!</div>
@@ -401,6 +419,21 @@
     <div class="modal-content">
         <h3 class="modal-title">🛒 아이템 & 무기 상점</h3>
         
+        <div class="shop-status-panel">
+            <div class="shop-status-row">
+                <span>💰 보유 소지금:</span>
+                <span class="shop-status-val" style="color:#facc15;" id="shop-money">10,000 원</span>
+            </div>
+            <div class="shop-status-row">
+                <span>🍀 확률 증가권 보유:</span>
+                <span class="shop-status-val" id="shop-cnt-rate">0 장</span>
+            </div>
+            <div class="shop-status-row">
+                <span>🛡️ 파괴 방지권 보유:</span>
+                <span class="shop-status-val" id="shop-cnt-protect">0 장</span>
+            </div>
+        </div>
+
         <div class="shop-tab-bar">
             <button class="shop-tab-btn active" id="tab-btn-item" onclick="switchShopTab('item')">🎒 강화 보조권</button>
             <button class="shop-tab-btn" id="tab-btn-weapon" onclick="switchShopTab('weapon')">⚔️ 완제품 무기</button>
@@ -445,6 +478,7 @@
             <li><strong>🏆 최고 레벨 기록:</strong> 도달했던 최고 강화 레벨이 상단 전광판에 기록됩니다.</li>
             <li><strong>⚔️ 상점 무기 구매:</strong> 한 번이라도 직접 달성해 본 단계의 무기를 프리미엄 가격으로 구매 가능합니다.</li>
             <li><strong>5단계 이상 파괴 위험:</strong> 41 Lv(5단계)부터 실패 시 10% 확률로 무기가 파괴되어 1 Lv로 초기화됩니다.</li>
+            <li><strong>판매 불가 조건:</strong> 기본 무기 상태인 1단계 1레벨(1 Lv) 무기는 판매할 수 없습니다.</li>
             <li><strong>보조권 활용:</strong> 확률 증가권(🍀) 및 단계별 파괴 방지권(🛡️)을 활용해 실패를 방지하세요.</li>
         </ul>
         <button class="modal-close-btn" onclick="closeHelp()">닫기</button>
@@ -504,7 +538,7 @@
 
     let rateScrolls = 0;
     let protectScrolls = 0;
-    let selectedRateCount = 0; // 사용할 확률 증가권 설정 개수 (0~5)
+    let selectedRateCount = 0;
     let useProtectScroll = false;
 
     const elMoney = document.getElementById('money');
@@ -518,6 +552,7 @@
     const elTotalLv = document.getElementById('total-lv');
     const elLogMsg = document.getElementById('log-msg');
     const btnUpgrade = document.getElementById('btn-upgrade');
+    const btnSell = document.getElementById('btn-sell');
     const elMaxLevel = document.getElementById('max-level-display');
 
     function saveData() {
@@ -583,6 +618,7 @@
     }
 
     function getSellPrice(level) {
+        if (level <= 1) return 0; // 1레벨은 판매불가
         const cost = Math.floor(100 * Math.pow(level, 1.8));
         return Math.floor(cost * 0.7 * level);
     }
@@ -625,13 +661,28 @@
 
         elRate.innerText = `${rate}%`;
         elCost.innerText = `${cost.toLocaleString()} 원`;
-        elSellPrice.innerText = `${sellPrice.toLocaleString()} 원`;
+        
+        // 🔒 1레벨 무기 판매 제어
+        if (totalLevel <= 1) {
+            elSellPrice.innerText = "판매 불가";
+            btnSell.innerText = "판매 불가";
+            btnSell.disabled = true;
+        } else {
+            elSellPrice.innerText = `${sellPrice.toLocaleString()} 원`;
+            btnSell.innerText = "판매";
+            btnSell.disabled = false;
+        }
+
         elTotalLv.innerText = `${totalLevel} / 100`;
 
         document.getElementById('cnt-rate').innerText = rateScrolls;
         document.getElementById('cnt-selected-rate').innerText = selectedRateCount;
         document.getElementById('cnt-protect').innerText = protectScrolls;
         document.getElementById('txt-protect-status').innerText = useProtectScroll ? '적용' : '미적용';
+
+        document.getElementById('shop-money').innerText = `${money.toLocaleString()} 원`;
+        document.getElementById('shop-cnt-rate').innerText = `${rateScrolls} 장`;
+        document.getElementById('shop-cnt-protect').innerText = `${protectScrolls} 장`;
 
         document.getElementById('slot-rate').classList.toggle('active', selectedRateCount > 0);
         document.getElementById('slot-protect').classList.toggle('active', useProtectScroll);
@@ -641,7 +692,6 @@
         renderWeaponShopList();
     }
 
-    // 🍀 확률 증가권 수량 선택 팝업
     function toggleRateScroll() {
         if (rateScrolls <= 0) {
             setLog("확률 증가권이 없습니다. 상점에서 구입하세요!", "fail");
@@ -661,7 +711,7 @@
         const maxUsable = Math.min(rateScrolls, 5);
         const inputStr = prompt(`🍀 확률 증가권을 몇 장 사용하시겠습니까?\n(보유: ${rateScrolls}장 / 1회 최대 ${maxUsable}장 사용 가능, 1장당 +2%)`, maxUsable);
         
-        if (inputStr === null) return; // 취소 누름
+        if (inputStr === null) return;
 
         const count = parseInt(inputStr, 10);
         if (isNaN(count) || count <= 0) {
@@ -682,7 +732,6 @@
         }
     }
 
-    // 🛡️ 파괴 방지권 설정 팝업
     function toggleProtectScroll() {
         if (protectScrolls <= 0) {
             setLog("파괴 방지권이 없습니다. 상점에서 구입하세요!", "fail");
@@ -714,7 +763,6 @@
         }
     }
 
-    // ⚔️ 강화 진행
     function upgrade() {
         const { stage, cost, rate } = getCalcValues(totalLevel);
 
@@ -723,7 +771,6 @@
             return;
         }
 
-        // 파괴 방지권 최종 사용 확인 팝업
         if (useProtectScroll) {
             const requiredProtect = stage;
             if (protectScrolls < requiredProtect) {
@@ -737,13 +784,12 @@
             if (!confirmUpgradeWithProtect) return;
 
             protectScrolls -= requiredProtect;
-            useProtectScroll = false; // 1회 사용 후 해제
+            useProtectScroll = false;
         }
 
-        // 확률 증가권 최종 차감
         if (selectedRateCount > 0) {
             rateScrolls -= selectedRateCount;
-            selectedRateCount = 0; // 1회 사용 후 해제
+            selectedRateCount = 0;
         }
 
         money -= cost;
@@ -779,6 +825,11 @@
     }
 
     function sell() {
+        if (totalLevel <= 1) {
+            setLog("기본 무기(1 Lv)는 판매할 수 없습니다.", "fail");
+            return;
+        }
+
         const { sellPrice } = getCalcValues(totalLevel);
         money += sellPrice;
         setLog(`무기를 판매하여 ${sellPrice.toLocaleString()}원을 얻었습니다.`, "info");
@@ -900,3 +951,5 @@
 
 </body>
 </html>
+
+
