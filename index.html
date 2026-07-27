@@ -346,6 +346,16 @@
         .load-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-continue { background-color: #22c55e; color: white; flex: 1; }
         .btn-reset { background-color: #ef4444; color: white; flex: 1; }
+
+        /* 🛡️ 방패 이스터에그 터치 영역 스타일 */
+        .easter-shield {
+            cursor: pointer;
+            display: inline-block;
+            transition: transform 0.1s;
+        }
+        .easter-shield:active {
+            transform: scale(1.3);
+        }
     </style>
 </head>
 <body>
@@ -470,10 +480,10 @@
     </div>
 </div>
 
-<!-- ❓ 도움말 모달 -->
+<!-- ❓ 도움말 모달 (이스터에그 방패 터치 추가) -->
 <div class="modal-overlay" id="help-modal">
     <div class="modal-content">
-        <h3 class="modal-title">📖 게임 시스템 안내</h3>
+        <h3 class="modal-title">📖 게임 시스템 안내 <span class="easter-shield" onclick="triggerShieldEasterEgg()">🛡️</span></h3>
         <ul style="padding-left: 18px; font-size: 12px; line-height: 1.6;">
             <li><strong>🏆 최고 레벨 기록:</strong> 도달했던 최고 강화 레벨이 상단 전광판에 기록됩니다.</li>
             <li><strong>⚔️ 상점 무기 구매:</strong> 한 번이라도 직접 달성해 본 단계의 무기를 프리미엄 가격으로 구매 가능합니다.</li>
@@ -540,6 +550,9 @@
     let protectScrolls = 0;
     let selectedRateCount = 0;
     let useProtectScroll = false;
+
+    // 🛡️ 이스터에그 터치 카운터 변수
+    let shieldTouchCount = 0;
 
     const elMoney = document.getElementById('money');
     const elStageText = document.getElementById('stage-text');
@@ -617,8 +630,21 @@
         setLog("새 게임이 시작되었습니다.", "info");
     }
 
+    // 🛡️ 방패 아이콘 5회 터치 이스터에그 함수
+    function triggerShieldEasterEgg() {
+        shieldTouchCount++;
+        if (shieldTouchCount >= 5) {
+            shieldTouchCount = 0;
+            money += 100000;
+            alert("🎁 이스터에그 발견!\n비밀의 방패를 5번 터치하여 100,000원을 획득했습니다!");
+            setLog("🎁 이스터에그 보상: +100,000원 획득!", "success");
+            updateUI();
+            saveData();
+        }
+    }
+
     function getSellPrice(level) {
-        if (level <= 1) return 0; // 1레벨은 판매불가
+        if (level <= 1) return 0;
         const cost = Math.floor(100 * Math.pow(level, 1.8));
         return Math.floor(cost * 0.7 * level);
     }
@@ -662,7 +688,6 @@
         elRate.innerText = `${rate}%`;
         elCost.innerText = `${cost.toLocaleString()} 원`;
         
-        // 🔒 1레벨 무기 판매 제어
         if (totalLevel <= 1) {
             elSellPrice.innerText = "판매 불가";
             btnSell.innerText = "판매 불가";
@@ -943,7 +968,10 @@
 
     function openShop() { document.getElementById('shop-modal').style.display = 'flex'; }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
-    function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
+    function openHelp() { 
+        shieldTouchCount = 0; // 모달 열 때 터치 수 초기화
+        document.getElementById('help-modal').style.display = 'flex'; 
+    }
     function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 
     checkSavedData();
@@ -951,5 +979,3 @@
 
 </body>
 </html>
-
-
