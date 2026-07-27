@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>100레벨 무기 강화하기 - 스피드런</title>
+    
+    <!-- 🚀 [1] 카카오톡 등 인앱 브라우저 자동 이탈 스크립트 -->
+    <script>
+        (function redirectToExternalBrowser() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const currentUrl = location.href;
+
+            // 카카오톡, 라인, 인스타그램 등의 인앱 브라우저 감지
+            if (userAgent.indexOf('kakaotalk') !== -1 || userAgent.indexOf('line') !== -1 || userAgent.indexOf('instagram') !== -1) {
+                if (userAgent.indexOf('android') !== -1) {
+                    // 안드로이드: 크롬 외부 브라우저 호출
+                    location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=http;package=com.android.chrome;end';
+                } else if (userAgent.indexOf('iphone') !== -1 || userAgent.indexOf('ipad') !== -1) {
+                    // iOS: 사파리 호출 안내 및 리다이렉트 처리
+                    location.href = 'ftp://' + currentUrl.replace(/https?:\/\//i, '');
+                }
+            }
+        })();
+    </script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -36,7 +56,6 @@
             border: 1px solid #334155;
         }
         
-        /* 상단 헤더 & 스피드런 타이머 */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -68,7 +87,6 @@
             color: #fff;
         }
 
-        /* ⏱️ 스피드런 전용 타이머 전광판 */
         .timer-board {
             background: linear-gradient(135deg, #1e1b4b, #311b92);
             border: 2px solid #6366f1;
@@ -80,11 +98,7 @@
             align-items: center;
             box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
         }
-        .timer-label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #a5b4fc;
-        }
+        .timer-label { font-size: 12px; font-weight: bold; color: #a5b4fc; }
         .timer-time {
             font-size: 20px;
             font-weight: bold;
@@ -93,7 +107,6 @@
             text-shadow: 0 0 5px #38fdf8;
         }
 
-        /* 재화 표시 */
         .money-display {
             font-size: 20px;
             font-weight: bold;
@@ -105,7 +118,6 @@
             border: 1px solid #334155;
         }
 
-        /* 무기 Display 영역 */
         .weapon-stage {
             position: relative;
             height: 170px;
@@ -159,7 +171,6 @@
         @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
         @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.1); } }
 
-        /* 정보 스탯 */
         .stat-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -173,7 +184,6 @@
         .stat-item { text-align: left; }
         .stat-value { font-weight: bold; color: #fff; }
 
-        /* 🎒 퀵슬롯 인벤토리 */
         .quick-slot-title { font-size: 12px; color: #94a3b8; text-align: left; margin-bottom: 6px; font-weight: bold; }
         .quick-slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .slot-item {
@@ -197,7 +207,6 @@
         .slot-name { font-size: 11px; font-weight: bold; color: #e2e8f0; }
         .slot-count { font-size: 11px; color: #facc15; font-weight: bold; }
 
-        /* 조작 버튼 */
         .btn-group { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
         button {
             padding: 14px;
@@ -217,7 +226,6 @@
         .fail { color: #f87171; }
         .info { color: #38bdf8; }
 
-        /* 🛒 모달 팝업 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -275,7 +283,6 @@
             margin-top: 10px;
         }
 
-        /* 🏆 클리어 신기록 모달 전용 스타일 */
         .clear-record-box {
             background: #0f172a;
             border: 2px solid #facc15;
@@ -292,6 +299,11 @@
             margin: 10px 0;
             text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
         }
+
+        /* 💾 이어하기 모달 전용 버튼 */
+        .load-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-continue { background-color: #22c55e; color: white; flex: 1; }
+        .btn-reset { background-color: #ef4444; color: white; flex: 1; }
     </style>
 </head>
 <body>
@@ -305,7 +317,6 @@
         </div>
     </div>
 
-    <!-- ⏱️ 스피드런 타이머 전광판 -->
     <div class="timer-board">
         <span class="timer-label">⏱️ SPEEDRUN TIMER</span>
         <span class="timer-time" id="timer-display">00:00.00</span>
@@ -334,7 +345,6 @@
         <div class="stat-item">전체 레벨: <span class="stat-value" id="total-lv">1 / 100</span></div>
     </div>
 
-    <!-- 🎒 퀵슬롯 인벤토리 -->
     <div class="quick-slot-title">🎒 강화 보조 인벤토리 (클릭하여 적용)</div>
     <div class="quick-slot-grid">
         <div class="slot-item" id="slot-rate" onclick="toggleRateScroll()">
@@ -395,7 +405,7 @@
         <h3 class="modal-title">📖 게임 시스템 안내</h3>
         <ul style="padding-left: 18px; font-size: 12px; line-height: 1.6;">
             <li><strong>⏱️ 스피드런 모드:</strong> 첫 강화 시 시계가 동작하며 100 Lv 달성 시 최종 기록이 남습니다.</li>
-            <li><strong>5단계 이상 파괴 위험:</strong> 41 Lv(5단계)부터 실패 시 10% 확률로 무기가 파괴되어 1 Lv로 초기화됩니다. (1~40 Lv은 하락만 존재)</li>
+            <li><strong>5단계 이상 파괴 위험:</strong> 41 Lv(5단계)부터 실패 시 10% 확률로 무기가 파괴되어 1 Lv로 초기화됩니다.</li>
             <li><strong>확률 증가권 (🍀):</strong> 1장당 확률이 +2% 증가합니다. (1회당 최대 5장 사용)</li>
             <li><strong>파괴 방지권 (🛡️):</strong> 무기 단계($N$단계)에 맞춰 $N$장이 필요하며, 파괴를 막아줍니다.</li>
         </ul>
@@ -403,7 +413,7 @@
     </div>
 </div>
 
-<!-- 🏆 100강 스피드런 달성 모달 -->
+<!-- 🏆 100강 달성 모달 -->
 <div class="modal-overlay" id="clear-modal">
     <div class="modal-content" style="text-align: center;">
         <h2 style="color: #facc15; margin-top: 0;">👑 100 Lv 신화 달성!</h2>
@@ -417,7 +427,19 @@
             </div>
         </div>
 
-        <button class="modal-close-btn" style="background-color: #22c55e;" onclick="location.reload()">새 게임 다시 도전</button>
+        <button class="modal-close-btn" style="background-color: #22c55e;" onclick="startNewGame()">새 게임 다시 도전</button>
+    </div>
+</div>
+
+<!-- 💾 [2] 저장된 데이터 발견 팝업 모달 -->
+<div class="modal-overlay" id="load-modal">
+    <div class="modal-content" style="text-align: center;">
+        <h3 class="modal-title" style="border:none;">💾 저장된 데이터 발견</h3>
+        <p style="font-size: 13px; color: #cbd5e1;" id="saved-info-text">이전 데이터가 존재합니다.<br>이어서 진행하시겠습니까?</p>
+        <div class="load-btns">
+            <button class="btn-continue" onclick="continueGame()">이어서 하기</button>
+            <button class="btn-reset" onclick="startNewGame()">새로 하기</button>
+        </div>
     </div>
 </div>
 
@@ -438,11 +460,12 @@
     ];
 
     let money = 10000;
-    let totalLevel = 1; // 1~100 연속 카운팅
+    let totalLevel = 1;
     let tryCount = 0;
 
     let timerStarted = false;
     let startTime = 0;
+    let accumulatedTime = 0; // 이전에 진행했던 누적 시간 (ms)
     let timerInterval = null;
     let finalFormattedTime = "00:00.00";
 
@@ -464,13 +487,85 @@
     const btnUpgrade = document.getElementById('btn-upgrade');
     const timerDisplay = document.getElementById('timer-display');
 
+    // 💾 [3] 저장 / 불러오기 로직
+    function saveData() {
+        const currentElapsed = timerStarted ? (Date.now() - startTime) : 0;
+        const gameData = {
+            money,
+            totalLevel,
+            tryCount,
+            accumulatedTime: accumulatedTime + currentElapsed,
+            timerStarted,
+            rateScrolls,
+            protectScrolls
+        };
+        localStorage.setItem('weapon_upgrade_save', JSON.stringify(gameData));
+    }
+
+    function checkSavedData() {
+        const saved = localStorage.getItem('weapon_upgrade_save');
+        if (saved) {
+            const data = JSON.parse(saved);
+            if (data.totalLevel > 1 || data.tryCount > 0 || data.money !== 10000) {
+                document.getElementById('saved-info-text').innerHTML = `
+                    현재 레벨: <strong>${data.totalLevel} Lv</strong><br>
+                    소지금: <strong>${data.money.toLocaleString()} 원</strong><br>
+                    누적 시간: <strong>${formatTime(data.accumulatedTime)}</strong>
+                `;
+                document.getElementById('load-modal').style.display = 'flex';
+                return;
+            }
+        }
+        updateUI();
+    }
+
+    function continueGame() {
+        document.getElementById('load-modal').style.display = 'none';
+        const data = JSON.parse(localStorage.getItem('weapon_upgrade_save'));
+        
+        money = data.money;
+        totalLevel = data.totalLevel;
+        tryCount = data.tryCount;
+        accumulatedTime = data.accumulatedTime;
+        rateScrolls = data.rateScrolls;
+        protectScrolls = data.protectScrolls;
+
+        timerDisplay.innerText = formatTime(accumulatedTime);
+
+        if (data.timerStarted) {
+            startTimer();
+        }
+        updateUI();
+        setLog("이전 게임을 이어서 시작합니다.", "info");
+    }
+
+    function startNewGame() {
+        localStorage.removeItem('weapon_upgrade_save');
+        document.getElementById('load-modal').style.display = 'none';
+        document.getElementById('clear-modal').style.display = 'none';
+        
+        money = 10000;
+        totalLevel = 1;
+        tryCount = 0;
+        accumulatedTime = 0;
+        timerStarted = false;
+        rateScrolls = 0;
+        protectScrolls = 0;
+        stopTimer();
+        
+        timerDisplay.innerText = "00:00.00";
+        updateUI();
+        setLog("새 게임이 시작되었습니다.", "info");
+    }
+
+    // ⏱️ 타이머 구동
     function startTimer() {
         if (timerStarted) return;
         timerStarted = true;
         startTime = Date.now();
         
         timerInterval = setInterval(() => {
-            const elapsedTime = Date.now() - startTime;
+            const elapsedTime = accumulatedTime + (Date.now() - startTime);
             finalFormattedTime = formatTime(elapsedTime);
             timerDisplay.innerText = finalFormattedTime;
         }, 30);
@@ -518,8 +613,6 @@
 
         elMoney.innerText = money.toLocaleString();
         elStageText.innerText = `${stage}단계 (${(stage-1)*10 + 1}~${stage*10} Lv)`;
-        
-        // 100까지 멈추지 않고 쭈욱 표시
         elWeaponName.innerText = `${currentWeapon.name} (${totalLevel} Lv)`;
         elWeaponIcon.innerText = currentWeapon.icon;
 
@@ -592,11 +685,11 @@
             if (totalLevel >= 100) {
                 stopTimer();
                 updateUI();
+                localStorage.removeItem('weapon_upgrade_save'); // 만렙 달성 시 저장 데이터 초기화
                 showClearModal();
                 return;
             }
         } else {
-            // 5단계(41 Lv) 이상부터 실패 시 10% 확률 파괴 적용
             if (stage >= 5 && Math.random() < 0.10 && !useProtectScroll) {
                 totalLevel = 1;
                 setLog(`💥 콰쾅! 무기가 파괴되어 1 Lv로 초기화되었습니다.`, "fail");
@@ -607,6 +700,7 @@
         }
 
         updateUI();
+        saveData(); // 진행 상황 자동 저장
         checkGameOver();
     }
 
@@ -616,6 +710,7 @@
         setLog(`무기를 판매하여 ${sellPrice.toLocaleString()}원을 얻었습니다.`, "info");
         totalLevel = 1;
         updateUI();
+        saveData();
     }
 
     function buyItem(type) {
@@ -629,6 +724,7 @@
             protectScrolls++;
         }
         updateUI();
+        saveData();
     }
 
     function checkGameOver() {
@@ -637,6 +733,7 @@
             stopTimer();
             setLog("💸 파산했습니다! 더 이상 진행할 수 없습니다. (게임 오버)", "fail");
             btnUpgrade.disabled = true;
+            localStorage.removeItem('weapon_upgrade_save');
         }
     }
 
@@ -656,7 +753,8 @@
     function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
     function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 
-    updateUI();
+    // 게임 접속 시 저장된 데이터 유무 체크
+    checkSavedData();
 </script>
 
 </body>
