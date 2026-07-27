@@ -2,11 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <!-- 메타 태그: 모바일 화면 고정 및 터치 줌 방지 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>100레벨 무기 강화하기</title>
     
-    <!-- 🚀 안드로이드 / 아이폰 인앱 브라우저 외부 강제 전환 -->
+    <!-- 🚀 인앱 브라우저 외부 강제 전환 스크립트 -->
     <script>
         (function redirectToExternalBrowser() {
             const userAgent = navigator.userAgent.toLowerCase();
@@ -89,7 +88,6 @@
             color: #fff;
         }
 
-        /* 🏆 최고 강화 레벨 전광판 */
         .record-board {
             background: linear-gradient(135deg, #1e1b4b, #311b92);
             border: 2px solid #facc15;
@@ -162,7 +160,7 @@
         .fx-0 { display: none; }
         .fx-1 { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
         .fx-2 { box-shadow: 0 0 25px rgba(79, 172, 254, 0.6); }
-        .fx-3 { box-shadow: 0 0 35px rgba(0, 242, 254, 0.8); }
+        .fx-3 { box-shadow: 0 0 25px rgba(0, 242, 254, 0.8); }
         .fx-4 { box-shadow: 0 0 45px rgba(51, 217, 178, 0.9); }
         .fx-5 { box-shadow: 0 0 55px rgba(255, 221, 89, 1); }
         .fx-6 { box-shadow: 0 0 65px rgba(255, 159, 26, 1); animation: spin 4s linear infinite; }
@@ -187,15 +185,16 @@
         .stat-value { font-weight: bold; color: #fff; }
 
         .quick-slot-title { font-size: 12px; color: #94a3b8; text-align: left; margin-bottom: 6px; font-weight: bold; }
-        .quick-slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .quick-slot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 15px; }
         .slot-item {
             background-color: #0f172a;
             border: 2px solid #334155;
             border-radius: 10px;
-            padding: 8px;
+            padding: 6px 4px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -204,10 +203,9 @@
             background-color: #1e293b;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
         }
-        .slot-icon { font-size: 22px; }
-        .slot-details { text-align: left; flex: 1; margin-left: 8px; }
-        .slot-name { font-size: 11px; font-weight: bold; color: #e2e8f0; }
-        .slot-count { font-size: 11px; color: #facc15; font-weight: bold; }
+        .slot-icon { font-size: 20px; margin-bottom: 2px; }
+        .slot-name { font-size: 10px; font-weight: bold; color: #e2e8f0; text-align: center; }
+        .slot-count { font-size: 10px; color: #facc15; font-weight: bold; margin-top: 2px; }
 
         .btn-group { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
         button {
@@ -266,13 +264,13 @@
             border-radius: 8px;
             padding: 8px 12px;
             margin-bottom: 10px;
-            font-size: 12px;
+            font-size: 11px;
         }
         .shop-status-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .shop-status-row:last-child { margin-bottom: 0; }
         .shop-status-val { font-weight: bold; color: #38bdf8; }
@@ -287,7 +285,7 @@
         .shop-tab-btn {
             flex: 1;
             padding: 8px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             background-color: #0f172a;
             color: #94a3b8;
@@ -347,7 +345,6 @@
         .btn-continue { background-color: #22c55e; color: white; flex: 1; }
         .btn-reset { background-color: #ef4444; color: white; flex: 1; }
 
-        /* 🛡️ 방패 이스터에그 터치 영역 스타일 */
         .easter-shield {
             cursor: pointer;
             display: inline-block;
@@ -398,21 +395,23 @@
         <div class="stat-item">현재 레벨: <span class="stat-value" id="total-lv">1 / 100</span></div>
     </div>
 
+    <!-- 🎒 3종 보조권 인벤토리 -->
     <div class="quick-slot-title">🎒 강화 보조 인벤토리 (클릭하여 적용)</div>
     <div class="quick-slot-grid">
         <div class="slot-item" id="slot-rate" onclick="toggleRateScroll()">
             <div class="slot-icon">🍀</div>
-            <div class="slot-details">
-                <div class="slot-name">확률 증가권 (+2%)</div>
-                <div class="slot-count">설정: <span id="cnt-selected-rate">0</span>장 / 보유: <span id="cnt-rate">0</span>장</div>
-            </div>
+            <div class="slot-name">확률 증가권</div>
+            <div class="slot-count"><span id="cnt-selected-rate">0</span>장 / <span id="cnt-rate">0</span>장</div>
         </div>
         <div class="slot-item" id="slot-protect" onclick="toggleProtectScroll()">
             <div class="slot-icon">🛡️</div>
-            <div class="slot-details">
-                <div class="slot-name">파괴 방지권</div>
-                <div class="slot-count"><span id="txt-protect-status">미적용</span> / 보유: <span id="cnt-protect">0</span>장</div>
-            </div>
+            <div class="slot-name">파괴 방지권</div>
+            <div class="slot-count"><span id="txt-protect-status">OFF</span> / <span id="cnt-protect">0</span>장</div>
+        </div>
+        <div class="slot-item" id="slot-down" onclick="toggleDownProtectScroll()">
+            <div class="slot-icon">🔰</div>
+            <div class="slot-name">하락 방어권</div>
+            <div class="slot-count"><span id="txt-down-status">OFF</span> / <span id="cnt-down">0</span>장</div>
         </div>
     </div>
 
@@ -435,12 +434,11 @@
                 <span class="shop-status-val" style="color:#facc15;" id="shop-money">10,000 원</span>
             </div>
             <div class="shop-status-row">
-                <span>🍀 확률 증가권 보유:</span>
-                <span class="shop-status-val" id="shop-cnt-rate">0 장</span>
+                <span>🍀 확률 증가권: <span id="shop-cnt-rate">0 장</span></span>
+                <span>🛡️ 파괴 방지권: <span id="shop-cnt-protect">0 장</span></span>
             </div>
             <div class="shop-status-row">
-                <span>🛡️ 파괴 방지권 보유:</span>
-                <span class="shop-status-val" id="shop-cnt-protect">0 장</span>
+                <span>🔰 하락 방어권: <span id="shop-cnt-down">0 장</span></span>
             </div>
         </div>
 
@@ -452,23 +450,33 @@
         <div class="shop-tab-content" id="tab-content-item">
             <div class="shop-item">
                 <div class="shop-info">
-                    <span style="font-size:28px;">🍀</span>
+                    <span style="font-size:26px;">🍀</span>
                     <div>
                         <div style="font-weight:bold; font-size:13px;">확률 증가권 (+2%)</div>
-                        <div class="shop-price">5,000 원</div>
+                        <div class="shop-price">10,000 원</div>
                     </div>
                 </div>
                 <button class="btn-buy" onclick="buyItem('rate')">구매</button>
             </div>
             <div class="shop-item">
                 <div class="shop-info">
-                    <span style="font-size:28px;">🛡️</span>
+                    <span style="font-size:26px;">🛡️</span>
                     <div>
                         <div style="font-weight:bold; font-size:13px;">파괴 방지권</div>
-                        <div class="shop-price">30,000 원</div>
+                        <div class="shop-price">50,000 원</div>
                     </div>
                 </div>
                 <button class="btn-buy" onclick="buyItem('protect')">구매</button>
+            </div>
+            <div class="shop-item">
+                <div class="shop-info">
+                    <span style="font-size:26px;">🔰</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:13px;">하락 방어권</div>
+                        <div class="shop-price">30,000 원</div>
+                    </div>
+                </div>
+                <button class="btn-buy" onclick="buyItem('down')">구매</button>
             </div>
         </div>
 
@@ -480,16 +488,23 @@
     </div>
 </div>
 
-<!-- ❓ 도움말 모달 (이스터에그 방패 터치 추가) -->
+<!-- ❓ 도움말 모달 -->
 <div class="modal-overlay" id="help-modal">
     <div class="modal-content">
         <h3 class="modal-title">📖 게임 시스템 안내 <span class="easter-shield" onclick="triggerShieldEasterEgg()">🛡️</span></h3>
         <ul style="padding-left: 18px; font-size: 12px; line-height: 1.6;">
-            <li><strong>🏆 최고 레벨 기록:</strong> 도달했던 최고 강화 레벨이 상단 전광판에 기록됩니다.</li>
-            <li><strong>⚔️ 상점 무기 구매:</strong> 한 번이라도 직접 달성해 본 단계의 무기를 프리미엄 가격으로 구매 가능합니다.</li>
+            <li><strong>📈 역S자형 확률 곡선:</strong><br>
+                - 1~30 Lv: 100% ~ 90%<br>
+                - 31~70 Lv: 90% → 20%<br>
+                - 71~90 Lv: 20% → 1%<br>
+                - 91~100 Lv: 1% → 0.1% 이하
+            </li>
+            <li><strong>🎒 보조권 시스템:</strong><br>
+                - 🍀 <strong>확률 증가권:</strong> 1장당 +2%p (최대 5장 = +10%p)<br>
+                - 🛡️ <strong>파괴 방지권:</strong> 무기 단계($N$)만큼 소모하여 파괴 방지<br>
+                - 🔰 <strong>하락 방어권:</strong> 실패 시 레벨 하락(1 Lv) 방지
+            </li>
             <li><strong>5단계 이상 파괴 위험:</strong> 41 Lv(5단계)부터 실패 시 10% 확률로 무기가 파괴되어 1 Lv로 초기화됩니다.</li>
-            <li><strong>판매 불가 조건:</strong> 기본 무기 상태인 1단계 1레벨(1 Lv) 무기는 판매할 수 없습니다.</li>
-            <li><strong>보조권 활용:</strong> 확률 증가권(🍀) 및 단계별 파괴 방지권(🛡️)을 활용해 실패를 방지하세요.</li>
         </ul>
         <button class="modal-close-btn" onclick="closeHelp()">닫기</button>
     </div>
@@ -548,10 +563,12 @@
 
     let rateScrolls = 0;
     let protectScrolls = 0;
+    let downProtectScrolls = 0;
+
     let selectedRateCount = 0;
     let useProtectScroll = false;
+    let useDownProtectScroll = false;
 
-    // 🛡️ 이스터에그 터치 카운터 변수
     let shieldTouchCount = 0;
 
     const elMoney = document.getElementById('money');
@@ -575,7 +592,8 @@
             maxReachedLevel,
             tryCount,
             rateScrolls,
-            protectScrolls
+            protectScrolls,
+            downProtectScrolls
         };
         localStorage.setItem('weapon_upgrade_save', JSON.stringify(gameData));
     }
@@ -607,6 +625,7 @@
         tryCount = data.tryCount;
         rateScrolls = data.rateScrolls;
         protectScrolls = data.protectScrolls;
+        downProtectScrolls = data.downProtectScrolls || 0;
 
         updateUI();
         setLog("이전 게임을 이어서 시작합니다.", "info");
@@ -623,21 +642,22 @@
         tryCount = 0;
         rateScrolls = 0;
         protectScrolls = 0;
+        downProtectScrolls = 0;
         selectedRateCount = 0;
         useProtectScroll = false;
+        useDownProtectScroll = false;
         
         updateUI();
         setLog("새 게임이 시작되었습니다.", "info");
     }
 
-    // 🛡️ 방패 아이콘 20회 터치 이스터에그 함수
     function triggerShieldEasterEgg() {
         shieldTouchCount++;
-        if (shieldTouchCount >= 20) {
+        if (shieldTouchCount >= 5) {
             shieldTouchCount = 0;
-            money += 1000000;
-            alert("🎁 이스터에그 발견!\n비밀의 방패를 20번 터치하여 1,000,000원을 획득했습니다!");
-            setLog("🎁 이스터에그 보상: +1,000,000원 획득!", "success");
+            money += 100000;
+            alert("🎁 이스터에그 발견!\n비밀의 방패를 5번 터치하여 100,000원을 획득했습니다!");
+            setLog("🎁 이스터에그 보상: +100,000원 획득!", "success");
             updateUI();
             saveData();
         }
@@ -649,6 +669,21 @@
         return Math.floor(cost * 0.7 * level);
     }
 
+    function getSigmoidRate(level) {
+        if (level <= 30) {
+            return 100 - ((level - 1) * (10 / 29));
+        } else if (level <= 70) {
+            const progress = (level - 30) / 40;
+            return 90 - (70 * progress);
+        } else if (level <= 90) {
+            const progress = (level - 70) / 20;
+            return 20 - (19 * progress);
+        } else {
+            const progress = (level - 90) / 9;
+            return Math.max(0.05, 1.0 - (0.95 * progress));
+        }
+    }
+
     function getCalcValues(level) {
         const stage = Math.min(10, Math.floor((level - 1) / 10) + 1);
         const subLevel = ((level - 1) % 10) + 1;
@@ -657,7 +692,7 @@
         const cost = Math.floor(100 * Math.pow(level, 1.8));
         const sellPrice = getSellPrice(level);
 
-        let baseRate = Math.max(5, Math.floor(100 - (level * 0.95)));
+        let baseRate = getSigmoidRate(level);
         let bonusRate = selectedRateCount * 2;
         const finalRate = Math.min(100, baseRate + bonusRate);
 
@@ -685,7 +720,7 @@
 
         elEffectLayer.className = `effect-layer fx-${effectLv}`;
 
-        elRate.innerText = `${rate}%`;
+        elRate.innerText = rate >= 10 ? `${Math.round(rate)}%` : `${rate.toFixed(2)}%`;
         elCost.innerText = `${cost.toLocaleString()} 원`;
         
         if (totalLevel <= 1) {
@@ -703,14 +738,18 @@
         document.getElementById('cnt-rate').innerText = rateScrolls;
         document.getElementById('cnt-selected-rate').innerText = selectedRateCount;
         document.getElementById('cnt-protect').innerText = protectScrolls;
-        document.getElementById('txt-protect-status').innerText = useProtectScroll ? '적용' : '미적용';
+        document.getElementById('txt-protect-status').innerText = useProtectScroll ? 'ON' : 'OFF';
+        document.getElementById('cnt-down').innerText = downProtectScrolls;
+        document.getElementById('txt-down-status').innerText = useDownProtectScroll ? 'ON' : 'OFF';
 
         document.getElementById('shop-money').innerText = `${money.toLocaleString()} 원`;
         document.getElementById('shop-cnt-rate').innerText = `${rateScrolls} 장`;
         document.getElementById('shop-cnt-protect').innerText = `${protectScrolls} 장`;
+        document.getElementById('shop-cnt-down').innerText = `${downProtectScrolls} 장`;
 
         document.getElementById('slot-rate').classList.toggle('active', selectedRateCount > 0);
         document.getElementById('slot-protect').classList.toggle('active', useProtectScroll);
+        document.getElementById('slot-down').classList.toggle('active', useDownProtectScroll);
 
         btnUpgrade.disabled = (money < cost && totalLevel < 100);
 
@@ -749,10 +788,10 @@
             return;
         }
 
-        const confirmUse = confirm(`🍀 확률 증가권 ${count}장 (+${count * 2}%)을 사용하여 강화에 적용하시겠습니까?`);
+        const confirmUse = confirm(`🍀 확률 증가권 ${count}장 (+${count * 2}%p)을 사용하여 강화에 적용하시겠습니까?`);
         if (confirmUse) {
             selectedRateCount = count;
-            setLog(`확률 증가권 ${count}장 (+${count * 2}%) 설정 완료!`, "info");
+            setLog(`확률 증가권 ${count}장 (+${count * 2}%p) 설정 완료!`, "info");
             updateUI();
         }
     }
@@ -788,18 +827,47 @@
         }
     }
 
+    function toggleDownProtectScroll() {
+        if (downProtectScrolls <= 0) {
+            setLog("하락 방어권이 없습니다. 상점에서 구입하세요!", "fail");
+            return;
+        }
+
+        if (useDownProtectScroll) {
+            const confirmOff = confirm("🔰 하락 방어권 적용을 해제하시겠습니까?");
+            if (confirmOff) {
+                useDownProtectScroll = false;
+                setLog("하락 방어권 적용이 해제되었습니다.", "info");
+                updateUI();
+            }
+            return;
+        }
+
+        const confirmApply = confirm(`🔰 하락 방어권 1장을 사용하여 실패 시 레벨 하락을 방지하시겠습니까?`);
+        if (confirmApply) {
+            useDownProtectScroll = true;
+            setLog(`하락 방어권 (1장 소모 예정) 적용 완료!`, "info");
+            updateUI();
+        }
+    }
+
+    // ⚔️ 강화 함수 (파괴 방지 로직 완벽 보완)
     function upgrade() {
         const { stage, cost, rate } = getCalcValues(totalLevel);
 
         if (money < cost) {
-            setLog("소지금이 부족합니다!", "fail");
+            setLog("소지원금이 부족합니다!", "fail");
             return;
         }
 
+        // 🛡️ 파괴 방지 상태를 저장할 전용 상태 변수
+        let isProtected = false;
+
+        // 🛡️ 파괴 방지권 차감 및 상태 확정
         if (useProtectScroll) {
             const requiredProtect = stage;
             if (protectScrolls < requiredProtect) {
-                alert(`⚠️ [수량 부족] ${stage}단계 무기 강화에는 파괴 방지권이 ${requiredProtect}장 필요하지만, 현재 ${protectScrolls}장 보유 중입니다.`);
+                alert(`⚠️ [수량 부족] ${stage}단계 무기 강화에는 파괴 방지권이 ${requiredProtect}장 필요합니다.`);
                 useProtectScroll = false;
                 updateUI();
                 return;
@@ -810,8 +878,27 @@
 
             protectScrolls -= requiredProtect;
             useProtectScroll = false;
+            isProtected = true; // 🔥 차감 성공 시 파괴 방지 상태 유효!
         }
 
+        // 🔰 하락 방어권 차감 및 상태 확정
+        let isDownProtected = false;
+        if (useDownProtectScroll) {
+            if (downProtectScrolls < 1) {
+                alert("⚠️ 하락 방어권이 부족합니다.");
+                useDownProtectScroll = false;
+                updateUI();
+                return;
+            }
+            const confirmUpgradeWithDown = confirm(`🔰 하락 방어권 1장을 사용하여 강화를 진행하시겠습니까?`);
+            if (!confirmUpgradeWithDown) return;
+
+            downProtectScrolls -= 1;
+            useDownProtectScroll = false;
+            isDownProtected = true;
+        }
+
+        // 🍀 확률 증가권 차감
         if (selectedRateCount > 0) {
             rateScrolls -= selectedRateCount;
             selectedRateCount = 0;
@@ -835,12 +922,21 @@
                 return;
             }
         } else {
-            if (stage >= 5 && Math.random() < 0.10 && !useProtectScroll) {
+            // 🛡️ [파괴 판정] isProtected 상태를 체크하여 100% 방지!
+            if (stage >= 5 && Math.random() < 0.10 && !isProtected) {
                 totalLevel = 1;
                 setLog(`💥 콰쾅! 무기가 파괴되어 1 Lv로 초기화되었습니다.`, "fail");
             } else {
-                if (totalLevel > 1) totalLevel--;
-                setLog(`강화 실패... 레벨이 하락했습니다.`, "fail");
+                if (isDownProtected) {
+                    setLog(`강화 실패... 🔰하락 방어권으로 레벨이 유지되었습니다!`, "info");
+                } else {
+                    if (totalLevel > 1) totalLevel--;
+                    if (isProtected) {
+                        setLog(`강화 실패... 🛡️파괴 방지권으로 파괴는 면했으나 레벨이 하락했습니다.`, "fail");
+                    } else {
+                        setLog(`강화 실패... 레벨이 하락했습니다.`, "fail");
+                    }
+                }
             }
         }
 
@@ -861,19 +957,24 @@
         totalLevel = 1;
         selectedRateCount = 0;
         useProtectScroll = false;
+        useDownProtectScroll = false;
         updateUI();
         saveData();
     }
 
     function buyItem(type) {
         if (type === 'rate') {
-            if (money < 5000) { alert("소지금이 부족합니다!"); return; }
-            money -= 5000;
+            if (money < 10000) { alert("소지금이 부족합니다!"); return; }
+            money -= 10000;
             rateScrolls++;
         } else if (type === 'protect') {
+            if (money < 50000) { alert("소지금이 부족합니다!"); return; }
+            money -= 50000;
+            protectScrolls++;
+        } else if (type === 'down') {
             if (money < 30000) { alert("소지금이 부족합니다!"); return; }
             money -= 30000;
-            protectScrolls++;
+            downProtectScrolls++;
         }
         updateUI();
         saveData();
@@ -892,6 +993,7 @@
         totalLevel = startLevel;
         selectedRateCount = 0;
         useProtectScroll = false;
+        useDownProtectScroll = false;
         setLog(`⚔️ ${weaponData[stage-1].name} (${startLevel} Lv) 무기를 구매했습니다!`, "info");
 
         updateUI();
@@ -949,7 +1051,7 @@
 
     function checkGameOver() {
         const minCost = getCalcValues(1).cost;
-        if (money < minCost && totalLevel === 1 && rateScrolls === 0 && protectScrolls === 0) {
+        if (money < minCost && totalLevel === 1 && rateScrolls === 0 && protectScrolls === 0 && downProtectScrolls === 0) {
             setLog("💸 파산했습니다! 더 이상 진행할 수 없습니다. (게임 오버)", "fail");
             btnUpgrade.disabled = true;
             localStorage.removeItem('weapon_upgrade_save');
@@ -969,7 +1071,7 @@
     function openShop() { document.getElementById('shop-modal').style.display = 'flex'; }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
     function openHelp() { 
-        shieldTouchCount = 0; // 모달 열 때 터치 수 초기화
+        shieldTouchCount = 0;
         document.getElementById('help-modal').style.display = 'flex'; 
     }
     function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
