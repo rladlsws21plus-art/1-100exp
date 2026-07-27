@@ -2,23 +2,30 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <!-- 메타 태그: 모바일 화면 고정 및 터치 줌 방지 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>100레벨 무기 강화하기 - 스피드런</title>
     
-    <!-- 🚀 [1] 카카오톡 등 인앱 브라우저 자동 이탈 스크립트 -->
+    <!-- 🚀 [1] 안드로이드 / 아이폰 인앱 브라우저(카카오톡, 라인 등) 외부 브라우저 강제 전환 스크립트 -->
     <script>
         (function redirectToExternalBrowser() {
             const userAgent = navigator.userAgent.toLowerCase();
             const currentUrl = location.href;
 
-            // 카카오톡, 라인, 인스타그램 등의 인앱 브라우저 감지
-            if (userAgent.indexOf('kakaotalk') !== -1 || userAgent.indexOf('line') !== -1 || userAgent.indexOf('instagram') !== -1) {
+            // 카카오톡 감지
+            if (userAgent.indexOf('kakaotalk') !== -1) {
                 if (userAgent.indexOf('android') !== -1) {
-                    // 안드로이드: 크롬 외부 브라우저 호출
+                    // 안드로이드 카카오톡 -> 외부 크롬으로 실행
                     location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=http;package=com.android.chrome;end';
-                } else if (userAgent.indexOf('iphone') !== -1 || userAgent.indexOf('ipad') !== -1) {
-                    // iOS: 사파리 호출 안내 및 리다이렉트 처리
-                    location.href = 'ftp://' + currentUrl.replace(/https?:\/\//i, '');
+                } else if (userAgent.indexOf('iphone') !== -1 || userAgent.indexOf('ipad') !== -1 || userAgent.indexOf('ipod') !== -1) {
+                    // 아이폰 카카오톡 -> 외부 사파리(Safari)로 열기 공식 명령어 적용
+                    location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
+                }
+            } 
+            // 라인, 인스타그램 등 기타 인앱 브라우저 대응
+            else if (userAgent.indexOf('line') !== -1 || userAgent.indexOf('instagram') !== -1) {
+                if (userAgent.indexOf('android') !== -1) {
+                    location.href = 'intent://' + currentUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=http;package=com.android.chrome;end';
                 }
             }
         })();
@@ -33,7 +40,7 @@
             touch-action: manipulation;
         }
         body {
-            font-family: 'Malgun Gothic', sans-serif;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
             background-color: #0f172a;
             color: #ffffff;
             margin: 0;
@@ -56,6 +63,7 @@
             border: 1px solid #334155;
         }
         
+        /* 상단 헤더 & 타이머 */
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -300,7 +308,6 @@
             text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
         }
 
-        /* 💾 이어하기 모달 전용 버튼 */
         .load-btns { display: flex; gap: 10px; margin-top: 15px; }
         .btn-continue { background-color: #22c55e; color: white; flex: 1; }
         .btn-reset { background-color: #ef4444; color: white; flex: 1; }
@@ -431,7 +438,7 @@
     </div>
 </div>
 
-<!-- 💾 [2] 저장된 데이터 발견 팝업 모달 -->
+<!-- 💾 이어하기 발견 팝업 -->
 <div class="modal-overlay" id="load-modal">
     <div class="modal-content" style="text-align: center;">
         <h3 class="modal-title" style="border:none;">💾 저장된 데이터 발견</h3>
@@ -444,6 +451,7 @@
 </div>
 
 <script>
+    // 핀치 줌 방지
     document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
     const weaponData = [
@@ -465,7 +473,7 @@
 
     let timerStarted = false;
     let startTime = 0;
-    let accumulatedTime = 0; // 이전에 진행했던 누적 시간 (ms)
+    let accumulatedTime = 0;
     let timerInterval = null;
     let finalFormattedTime = "00:00.00";
 
@@ -487,7 +495,7 @@
     const btnUpgrade = document.getElementById('btn-upgrade');
     const timerDisplay = document.getElementById('timer-display');
 
-    // 💾 [3] 저장 / 불러오기 로직
+    // 💾 로컬 스토리지 저장 및 불러오기
     function saveData() {
         const currentElapsed = timerStarted ? (Date.now() - startTime) : 0;
         const gameData = {
@@ -558,7 +566,7 @@
         setLog("새 게임이 시작되었습니다.", "info");
     }
 
-    // ⏱️ 타이머 구동
+    // ⏱️ 타이머 기능
     function startTimer() {
         if (timerStarted) return;
         timerStarted = true;
@@ -685,7 +693,7 @@
             if (totalLevel >= 100) {
                 stopTimer();
                 updateUI();
-                localStorage.removeItem('weapon_upgrade_save'); // 만렙 달성 시 저장 데이터 초기화
+                localStorage.removeItem('weapon_upgrade_save');
                 showClearModal();
                 return;
             }
@@ -700,7 +708,7 @@
         }
 
         updateUI();
-        saveData(); // 진행 상황 자동 저장
+        saveData();
         checkGameOver();
     }
 
@@ -753,7 +761,7 @@
     function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
     function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 
-    // 게임 접속 시 저장된 데이터 유무 체크
+    // 게임 시작 시 저장된 게임 여부 확인
     checkSavedData();
 </script>
 
