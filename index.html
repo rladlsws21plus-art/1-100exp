@@ -580,13 +580,21 @@
         setLog("새 게임이 시작되었습니다.", "info");
     }
 
+    // 특정 레벨 무기의 판매 가격 계산 (기존 공식 복원)
+    function getSellPrice(level) {
+        const cost = Math.floor(100 * Math.pow(level, 1.8));
+        return Math.floor(cost * 0.7 * level);
+    }
+
+    // 수치 계산 (무기 판매가 기존 복원)
     function getCalcValues(level) {
         const stage = Math.min(10, Math.floor((level - 1) / 10) + 1);
         const subLevel = ((level - 1) % 10) + 1;
         const effectLv = subLevel - 1;
 
         const cost = Math.floor(100 * Math.pow(level, 1.8));
-        const sellPrice = Math.floor(cost * 0.7 * level);
+        const sellPrice = getSellPrice(level); // 복원된 공식
+
         let baseRate = Math.max(5, Math.floor(100 - (level * 0.95)));
 
         let bonusRate = 0;
@@ -600,12 +608,10 @@
         return { stage, effectLv, cost, sellPrice, rate: finalRate };
     }
 
-    function getTheoreticalCost(targetLevel) {
-        let total = 0;
-        for (let l = 1; l < targetLevel; l++) {
-            total += Math.floor(100 * Math.pow(l, 1.8));
-        }
-        return Math.floor(total * 1.35);
+    // ⚔️ 완제품 구매가 계산 (해당 레벨 무기 판매가의 1.5배)
+    function getWeaponBuyPrice(targetLevel) {
+        const sellPrice = getSellPrice(targetLevel);
+        return Math.floor(sellPrice * 1.5);
     }
 
     function updateUI() {
@@ -758,7 +764,7 @@
         for (let s = 2; s <= 10; s++) {
             const startLevel = (s - 1) * 10 + 1;
             const weaponInfo = weaponData[s - 1];
-            const price = getTheoreticalCost(startLevel);
+            const price = getWeaponBuyPrice(startLevel); // 판매가보다 비싼 금액
             const isUnlocked = maxReachedLevel >= startLevel;
 
             html += `
@@ -827,5 +833,3 @@
 
 </body>
 </html>
-
-
