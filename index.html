@@ -318,7 +318,7 @@
     <div class="weapon-stage">
         <div class="weapon-info">
             <div class="weapon-stage-tag" id="stage-text">1단계 (1~10 Lv)</div>
-            <div class="weapon-name" id="weapon-name">녹슨 단검 (+1)</div>
+            <div class="weapon-name" id="weapon-name">녹슨 단검 (1 Lv)</div>
         </div>
         
         <div class="weapon-box" id="weapon-box">
@@ -394,8 +394,8 @@
     <div class="modal-content">
         <h3 class="modal-title">📖 게임 시스템 안내</h3>
         <ul style="padding-left: 18px; font-size: 12px; line-height: 1.6;">
-            <li><strong>⏱️ 스피드런 모드:</strong> 첫 강화 시 시계가 동작하며 100강 달성 시 최종 기록이 남습니다.</li>
-            <li><strong>2단계 이상 파괴 위험:</strong> 11레벨(2단계)부터 실패 시 10% 확률로 무기가 파괴되어 1단계 1레벨로 초기화됩니다.</li>
+            <li><strong>⏱️ 스피드런 모드:</strong> 첫 강화 시 시계가 동작하며 100 Lv 달성 시 최종 기록이 남습니다.</li>
+            <li><strong>5단계 이상 파괴 위험:</strong> 41 Lv(5단계)부터 실패 시 10% 확률로 무기가 파괴되어 1 Lv로 초기화됩니다. (1~40 Lv은 하락만 존재)</li>
             <li><strong>확률 증가권 (🍀):</strong> 1장당 확률이 +2% 증가합니다. (1회당 최대 5장 사용)</li>
             <li><strong>파괴 방지권 (🛡️):</strong> 무기 단계($N$단계)에 맞춰 $N$장이 필요하며, 파괴를 막아줍니다.</li>
         </ul>
@@ -406,7 +406,7 @@
 <!-- 🏆 100강 스피드런 달성 모달 -->
 <div class="modal-overlay" id="clear-modal">
     <div class="modal-content" style="text-align: center;">
-        <h2 style="color: #facc15; margin-top: 0;">👑 100강 신화 달성!</h2>
+        <h2 style="color: #facc15; margin-top: 0;">👑 100 Lv 신화 달성!</h2>
         <p style="font-size: 14px; color: #94a3b8;">축하합니다! 100레벨 신화 무기를 완성했습니다.</p>
         
         <div class="clear-record-box">
@@ -438,16 +438,14 @@
     ];
 
     let money = 10000;
-    let totalLevel = 1;
-    let tryCount = 0; // 총 강화 시도 횟수
+    let totalLevel = 1; // 1~100 연속 카운팅
+    let tryCount = 0;
 
-    // ⏱️ 스피드런 타이머 관련 변수
     let timerStarted = false;
     let startTime = 0;
     let timerInterval = null;
     let finalFormattedTime = "00:00.00";
 
-    // 아이템 보유량 및 적용 상태
     let rateScrolls = 0;
     let protectScrolls = 0;
     let useRateScroll = false;
@@ -466,7 +464,6 @@
     const btnUpgrade = document.getElementById('btn-upgrade');
     const timerDisplay = document.getElementById('timer-display');
 
-    // ⏱️ 타이머 구동 함수
     function startTimer() {
         if (timerStarted) return;
         timerStarted = true;
@@ -512,16 +509,18 @@
 
         const finalRate = Math.min(100, baseRate + bonusRate);
 
-        return { stage, subLevel, effectLv, cost, sellPrice, rate: finalRate };
+        return { stage, effectLv, cost, sellPrice, rate: finalRate };
     }
 
     function updateUI() {
-        const { stage, subLevel, effectLv, cost, sellPrice, rate } = getCalcValues(totalLevel);
+        const { stage, effectLv, cost, sellPrice, rate } = getCalcValues(totalLevel);
         const currentWeapon = weaponData[stage - 1];
 
         elMoney.innerText = money.toLocaleString();
         elStageText.innerText = `${stage}단계 (${(stage-1)*10 + 1}~${stage*10} Lv)`;
-        elWeaponName.innerText = `${currentWeapon.name} (+${subLevel})`;
+        
+        // 100까지 멈추지 않고 쭈욱 표시
+        elWeaponName.innerText = `${currentWeapon.name} (${totalLevel} Lv)`;
         elWeaponIcon.innerText = currentWeapon.icon;
 
         elEffectLayer.className = `effect-layer fx-${effectLv}`;
@@ -552,9 +551,7 @@
         updateUI();
     }
 
-    // 강화 클릭
     function upgrade() {
-        // 첫 강화시 타이머 스타트
         startTimer();
 
         const { stage, cost, rate } = getCalcValues(totalLevel);
@@ -582,17 +579,16 @@
         }
 
         money -= cost;
-        tryCount++; // 시도 횟수 증가
+        tryCount++;
         const rand = Math.random() * 100;
 
         if (rand <= rate) {
             totalLevel++;
-            setLog(`🎉 강화 성공! (+${totalLevel} 레벨)`, "success");
+            setLog(`🎉 강화 성공! (${totalLevel} Lv)`, "success");
             const box = document.getElementById('weapon-box');
             box.style.transform = 'scale(1.2)';
             setTimeout(() => box.style.transform = 'scale(1)', 150);
 
-            // 🏆 100강(만렙) 달성 처리
             if (totalLevel >= 100) {
                 stopTimer();
                 updateUI();
@@ -600,9 +596,10 @@
                 return;
             }
         } else {
-            if (stage >= 2 && Math.random() < 0.10 && !useProtectScroll) {
+            // 5단계(41 Lv) 이상부터 실패 시 10% 확률 파괴 적용
+            if (stage >= 5 && Math.random() < 0.10 && !useProtectScroll) {
                 totalLevel = 1;
-                setLog(`💥 콰쾅! 무기가 파괴되어 1단계 1레벨로 초기화되었습니다.`, "fail");
+                setLog(`💥 콰쾅! 무기가 파괴되어 1 Lv로 초기화되었습니다.`, "fail");
             } else {
                 if (totalLevel > 1) totalLevel--;
                 setLog(`강화 실패... 레벨이 하락했습니다.`, "fail");
@@ -664,4 +661,3 @@
 
 </body>
 </html>
-
