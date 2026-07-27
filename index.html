@@ -630,14 +630,14 @@
         setLog("새 게임이 시작되었습니다.", "info");
     }
 
-    // 🛡️ 방패 아이콘 5회 터치 이스터에그 함수
+    // 🛡️ 방패 아이콘 20회 터치 이스터에그 함수
     function triggerShieldEasterEgg() {
         shieldTouchCount++;
-        if (shieldTouchCount >= 5) {
+        if (shieldTouchCount >= 20) {
             shieldTouchCount = 0;
-            money += 100000;
-            alert("🎁 이스터에그 발견!\n비밀의 방패를 5번 터치하여 100,000원을 획득했습니다!");
-            setLog("🎁 이스터에그 보상: +100,000원 획득!", "success");
+            money += 1000000;
+            alert("🎁 이스터에그 발견!\n비밀의 방패를 20번 터치하여 1,000,000원을 획득했습니다!");
+            setLog("🎁 이스터에그 보상: +1,000,000원 획득!", "success");
             updateUI();
             saveData();
         }
