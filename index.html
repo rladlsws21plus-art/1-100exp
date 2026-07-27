@@ -376,14 +376,14 @@
             <div class="slot-icon">🍀</div>
             <div class="slot-details">
                 <div class="slot-name">확률 증가권 (+2%)</div>
-                <div class="slot-count">보유: <span id="cnt-rate">0</span>장</div>
+                <div class="slot-count">설정: <span id="cnt-selected-rate">0</span>장 / 보유: <span id="cnt-rate">0</span>장</div>
             </div>
         </div>
         <div class="slot-item" id="slot-protect" onclick="toggleProtectScroll()">
             <div class="slot-icon">🛡️</div>
             <div class="slot-details">
                 <div class="slot-name">파괴 방지권</div>
-                <div class="slot-count">보유: <span id="cnt-protect">0</span>장</div>
+                <div class="slot-count"><span id="txt-protect-status">미적용</span> / 보유: <span id="cnt-protect">0</span>장</div>
             </div>
         </div>
     </div>
@@ -504,7 +504,7 @@
 
     let rateScrolls = 0;
     let protectScrolls = 0;
-    let useRateScroll = false;
+    let selectedRateCount = 0; // 사용할 확률 증가권 설정 개수 (0~5)
     let useProtectScroll = false;
 
     const elMoney = document.getElementById('money');
@@ -575,40 +575,33 @@
         tryCount = 0;
         rateScrolls = 0;
         protectScrolls = 0;
+        selectedRateCount = 0;
+        useProtectScroll = false;
         
         updateUI();
         setLog("새 게임이 시작되었습니다.", "info");
     }
 
-    // 특정 레벨 무기의 판매 가격 계산 (기존 공식 복원)
     function getSellPrice(level) {
         const cost = Math.floor(100 * Math.pow(level, 1.8));
         return Math.floor(cost * 0.7 * level);
     }
 
-    // 수치 계산 (무기 판매가 기존 복원)
     function getCalcValues(level) {
         const stage = Math.min(10, Math.floor((level - 1) / 10) + 1);
         const subLevel = ((level - 1) % 10) + 1;
         const effectLv = subLevel - 1;
 
         const cost = Math.floor(100 * Math.pow(level, 1.8));
-        const sellPrice = getSellPrice(level); // 복원된 공식
+        const sellPrice = getSellPrice(level);
 
         let baseRate = Math.max(5, Math.floor(100 - (level * 0.95)));
-
-        let bonusRate = 0;
-        if (useRateScroll && rateScrolls > 0) {
-            const usedCount = Math.min(rateScrolls, 5);
-            bonusRate = usedCount * 2;
-        }
-
+        let bonusRate = selectedRateCount * 2;
         const finalRate = Math.min(100, baseRate + bonusRate);
 
         return { stage, effectLv, cost, sellPrice, rate: finalRate };
     }
 
-    // ⚔️ 완제품 구매가 계산 (해당 레벨 무기 판매가의 1.5배)
     function getWeaponBuyPrice(targetLevel) {
         const sellPrice = getSellPrice(targetLevel);
         return Math.floor(sellPrice * 1.5);
@@ -636,28 +629,92 @@
         elTotalLv.innerText = `${totalLevel} / 100`;
 
         document.getElementById('cnt-rate').innerText = rateScrolls;
+        document.getElementById('cnt-selected-rate').innerText = selectedRateCount;
         document.getElementById('cnt-protect').innerText = protectScrolls;
+        document.getElementById('txt-protect-status').innerText = useProtectScroll ? '적용' : '미적용';
 
-        document.getElementById('slot-rate').classList.toggle('active', useRateScroll && rateScrolls > 0);
-        document.getElementById('slot-protect').classList.toggle('active', useProtectScroll && protectScrolls > 0);
+        document.getElementById('slot-rate').classList.toggle('active', selectedRateCount > 0);
+        document.getElementById('slot-protect').classList.toggle('active', useProtectScroll);
 
         btnUpgrade.disabled = (money < cost && totalLevel < 100);
 
         renderWeaponShopList();
     }
 
+    // 🍀 확률 증가권 수량 선택 팝업
     function toggleRateScroll() {
-        if (rateScrolls <= 0) { setLog("확률 증가권이 없습니다. 상점에서 구입하세요!", "fail"); return; }
-        useRateScroll = !useRateScroll;
-        updateUI();
+        if (rateScrolls <= 0) {
+            setLog("확률 증가권이 없습니다. 상점에서 구입하세요!", "fail");
+            return;
+        }
+
+        if (selectedRateCount > 0) {
+            const confirmOff = confirm("🍀 확률 증가권 사용을 해제하시겠습니까?");
+            if (confirmOff) {
+                selectedRateCount = 0;
+                setLog("확률 증가권 사용이 해제되었습니다.", "info");
+                updateUI();
+            }
+            return;
+        }
+
+        const maxUsable = Math.min(rateScrolls, 5);
+        const inputStr = prompt(`🍀 확률 증가권을 몇 장 사용하시겠습니까?\n(보유: ${rateScrolls}장 / 1회 최대 ${maxUsable}장 사용 가능, 1장당 +2%)`, maxUsable);
+        
+        if (inputStr === null) return; // 취소 누름
+
+        const count = parseInt(inputStr, 10);
+        if (isNaN(count) || count <= 0) {
+            alert("유효한 수량을 입력해주세요.");
+            return;
+        }
+
+        if (count > maxUsable) {
+            alert(`1회 강화에 최대 ${maxUsable}장까지만 사용할 수 있습니다.`);
+            return;
+        }
+
+        const confirmUse = confirm(`🍀 확률 증가권 ${count}장 (+${count * 2}%)을 사용하여 강화에 적용하시겠습니까?`);
+        if (confirmUse) {
+            selectedRateCount = count;
+            setLog(`확률 증가권 ${count}장 (+${count * 2}%) 설정 완료!`, "info");
+            updateUI();
+        }
     }
 
+    // 🛡️ 파괴 방지권 설정 팝업
     function toggleProtectScroll() {
-        if (protectScrolls <= 0) { setLog("파괴 방지권이 없습니다. 상점에서 구입하세요!", "fail"); return; }
-        useProtectScroll = !useProtectScroll;
-        updateUI();
+        if (protectScrolls <= 0) {
+            setLog("파괴 방지권이 없습니다. 상점에서 구입하세요!", "fail");
+            return;
+        }
+
+        const { stage } = getCalcValues(totalLevel);
+
+        if (useProtectScroll) {
+            const confirmOff = confirm("🛡️ 파괴 방지권 적용을 해제하시겠습니까?");
+            if (confirmOff) {
+                useProtectScroll = false;
+                setLog("파괴 방지권 적용이 해제되었습니다.", "info");
+                updateUI();
+            }
+            return;
+        }
+
+        if (protectScrolls < stage) {
+            alert(`⚠️ 현재 무기는 ${stage}단계이므로 파괴 방지권이 ${stage}장 필요합니다.\n(현재 보유: ${protectScrolls}장)`);
+            return;
+        }
+
+        const confirmApply = confirm(`🛡️ 현재 무기(${stage}단계) 보호에는 파괴 방지권 ${stage}장이 소모됩니다.\n적용하시겠습니까?`);
+        if (confirmApply) {
+            useProtectScroll = true;
+            setLog(`파괴 방지권 (${stage}장 소모 예정) 적용 완료!`, "info");
+            updateUI();
+        }
     }
 
+    // ⚔️ 강화 진행
     function upgrade() {
         const { stage, cost, rate } = getCalcValues(totalLevel);
 
@@ -666,21 +723,27 @@
             return;
         }
 
+        // 파괴 방지권 최종 사용 확인 팝업
         if (useProtectScroll) {
             const requiredProtect = stage;
             if (protectScrolls < requiredProtect) {
                 alert(`⚠️ [수량 부족] ${stage}단계 무기 강화에는 파괴 방지권이 ${requiredProtect}장 필요하지만, 현재 ${protectScrolls}장 보유 중입니다.`);
+                useProtectScroll = false;
+                updateUI();
                 return;
-            } else {
-                const confirmUse = confirm(`🛡️ ${stage}단계 강화 보호를 위해 파괴 방지권 ${requiredProtect}장을 사용하시겠습니까?`);
-                if (!confirmUse) return;
-                protectScrolls -= requiredProtect;
             }
+
+            const confirmUpgradeWithProtect = confirm(`🛡️ ${stage}단계 무기 강화를 진행합니다.\n파괴 방지권 ${requiredProtect}장이 소모됩니다. 계속하시겠습니까?`);
+            if (!confirmUpgradeWithProtect) return;
+
+            protectScrolls -= requiredProtect;
+            useProtectScroll = false; // 1회 사용 후 해제
         }
 
-        if (useRateScroll && rateScrolls > 0) {
-            const usedRateCount = Math.min(rateScrolls, 5);
-            rateScrolls -= usedRateCount;
+        // 확률 증가권 최종 차감
+        if (selectedRateCount > 0) {
+            rateScrolls -= selectedRateCount;
+            selectedRateCount = 0; // 1회 사용 후 해제
         }
 
         money -= cost;
@@ -720,6 +783,8 @@
         money += sellPrice;
         setLog(`무기를 판매하여 ${sellPrice.toLocaleString()}원을 얻었습니다.`, "info");
         totalLevel = 1;
+        selectedRateCount = 0;
+        useProtectScroll = false;
         updateUI();
         saveData();
     }
@@ -749,6 +814,8 @@
 
         money -= price;
         totalLevel = startLevel;
+        selectedRateCount = 0;
+        useProtectScroll = false;
         setLog(`⚔️ ${weaponData[stage-1].name} (${startLevel} Lv) 무기를 구매했습니다!`, "info");
 
         updateUI();
@@ -764,7 +831,7 @@
         for (let s = 2; s <= 10; s++) {
             const startLevel = (s - 1) * 10 + 1;
             const weaponInfo = weaponData[s - 1];
-            const price = getWeaponBuyPrice(startLevel); // 판매가보다 비싼 금액
+            const price = getWeaponBuyPrice(startLevel);
             const isUnlocked = maxReachedLevel >= startLevel;
 
             html += `
